@@ -8,7 +8,7 @@ export default function ReportsPage() {
         <div className="space-y-8">
             {/* Header */}
             <div>
-                <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+                <h2 className="text-3xl font-bold tracking-tight">Reportes</h2>
                 <p className="text-muted-foreground">
                     Esto es un ejemplo, no va nada de esto..ok
                 </p>

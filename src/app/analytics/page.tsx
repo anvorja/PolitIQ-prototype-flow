@@ -2,6 +2,7 @@
 
 import { TrendsChart } from "@/components/analytics/TrendsChart";
 import {InfluencersTable} from "@/components/analytics/InfluencersTable";
+import {TopicsAnalysis} from "@/components/analytics/TopicsAnalysis";
 
 export default function AnalyticsPage() {
     return (
@@ -17,6 +18,7 @@ export default function AnalyticsPage() {
                 <TrendsChart />
                 {/*TODO: implementar más componentes de análisis*/}
                 <InfluencersTable />
+                <TopicsAnalysis></TopicsAnalysis>
                 {/* TopicsAnalysis se agregará próximamente */}
             </div>
         </div>
