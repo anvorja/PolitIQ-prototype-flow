@@ -101,6 +101,22 @@ export function TopicsAnalysis() {
                     <Card className="md:col-span-2">
                         <CardHeader>
                             <CardTitle className="text-lg">Tendencia Semanal</CardTitle>
+                            <p className="text-sm text-muted-foreground">
+                                Este gráfico muestra dos métricas clave a lo largo del tiempo:
+                            </p>
+                            <div className="mt-2 space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-primary"></div>
+                                    <span className="text-sm">Menciones (línea azul): Cantidad de veces que se menciona el tema por día</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-destructive"></div>
+                                    <span className="text-sm">Sentimiento (línea roja): Porcentaje de sentimiento positivo del tema (0-100%)</span>
+                                </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-2">
+                                Permite identificar tendencias, picos de menciones y cambios en la percepción del tema a lo largo del tiempo.
+                            </p>
                         </CardHeader>
                         <CardContent>
                             <div className="h-[300px]">
