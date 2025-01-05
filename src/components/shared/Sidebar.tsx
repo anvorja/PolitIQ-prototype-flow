@@ -1,0 +1,62 @@
+"use client"
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { navigationData } from '@/data/NavigationMockData';
+import { Card } from '@/components/ui/card';
+
+export function Sidebar() {
+    const pathname = usePathname();
+
+    return (
+        <Card className="h-screen w-64 p-4 flex flex-col gap-6 rounded-none border-r">
+            {/* Logo */}
+            <div className="flex items-center gap-2 px-2">
+                <span className="font-bold text-2xl">PolitIQ</span>
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 flex flex-col gap-6">
+                {navigationData.map((section) => (
+                    <div key={section.section}>
+                        <h2 className="font-semibold text-sm text-muted-foreground mb-2 px-2">
+                            {section.section}
+                        </h2>
+                        <div className="flex flex-col gap-1">
+                            {section.items.map((item) => {
+                                const isActive = pathname === item.href;
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className={cn(
+                                            "flex items-center gap-3 px-2 py-2 rounded-md text-sm transition-colors",
+                                            "hover:bg-accent hover:text-accent-foreground",
+                                            isActive && "bg-accent text-accent-foreground"
+                                        )}
+                                    >
+                                        <item.icon className="w-4 h-4" />
+                                        <span>{item.title}</span>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
+            </nav>
+
+            {/* User Profile */}
+            <div className="border-t pt-4">
+                <div className="flex items-center gap-3 px-2">
+                    <div className="w-8 h-8 rounded-full bg-accent" />
+                    <div className="flex flex-col">
+                        <span className="text-sm font-medium">Administrador</span>
+                        <span className="text-xs text-muted-foreground">admin@politiq.com</span>
+                    </div>
+                </div>
+            </div>
+        </Card>
+    );
+}
