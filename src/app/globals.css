@@ -119,10 +119,10 @@
 /*}*/
 /* Estilos para el tooltip */
 .map-tooltip {
-  position: fixed;  /* Cambiado a fixed para seguir el cursor */
+  position: fixed;
   padding: 8px 12px;
-  background: hsl(var(--card));
-  color: hsl(var(--card-foreground));
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
   border: 1px solid hsl(var(--border));
   border-radius: 6px;
   font-size: 14px;
