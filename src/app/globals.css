@@ -103,27 +103,12 @@
   transform: scale(1.2);
 }
 
-/* Estilos para el tooltip */
-.map-tooltip {
-  position: absolute;
-  padding: 8px 12px;
-  background: hsl(var(--popover));
-  color: hsl(var(--popover-foreground));
-  border: 1px solid hsl(var(--border));
-  border-radius: 6px;
-  font-size: 14px;
-  pointer-events: none;
-  z-index: 1000;
-  white-space: pre-line;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Estilos para el tooltip */
+/*!* Estilos para el tooltip *!*/
 /*.map-tooltip {*/
 /*  position: fixed;*/
 /*  padding: 8px 12px;*/
-/*  background: hsl(var(--card));*/
-/*  color: hsl(var(--card-foreground));*/
+/*  background: hsl(var(--popover));*/
+/*  color: hsl(var(--popover-foreground));*/
 /*  border: 1px solid hsl(var(--border));*/
 /*  border-radius: 6px;*/
 /*  font-size: 14px;*/
@@ -132,6 +117,21 @@
 /*  white-space: pre-line;*/
 /*  box-shadow: 0 2px 4px rgba(0,0,0,0.1);*/
 /*}*/
+/* Estilos para el tooltip */
+.map-tooltip {
+  position: fixed;  /* Cambiado a fixed para seguir el cursor */
+  padding: 8px 12px;
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 1000;
+  white-space: pre-line;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  max-width: 300px;  /* Evitar tooltips demasiado anchos */
+}
 
 /* Estilos para la leyenda */
 .map-legend {
