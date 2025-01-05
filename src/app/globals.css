@@ -130,7 +130,7 @@
   z-index: 1000;
   white-space: pre-line;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  max-width: 300px;  /* Evitar tooltips demasiado anchos */
+  /*max-width: 300px;  !* Evitar tooltips demasiado anchos *!*/
 }
 
 /* Estilos para la leyenda */
