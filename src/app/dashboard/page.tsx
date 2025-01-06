@@ -4,6 +4,7 @@ import { KPICard } from "@/components/dashboard/KPICard";
 import { kpiCardsData } from "@/data/DashboardMockData";
 import { TrendsChart } from "@/components/analytics/TrendsChart";
 import { GeoHeatmap } from "@/components/dashboard/GeoHeatmap";
+import { AlertsSidebar } from "@/components/dashboard/AlertsSidebar";
 
 export default function DashboardPage() {
     return (
@@ -23,10 +24,18 @@ export default function DashboardPage() {
                 ))}
             </div>
 
-            {/* Charts Section */}
-            <div className="grid gap-4 grid-cols-1">
-                <TrendsChart />
-                <GeoHeatmap />
+            {/* Main Content Grid */}
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-6">
+                {/* Charts Section - Ocupa 4 columnas en pantallas grandes */}
+                <div className="space-y-6 lg:col-span-4">
+                    <TrendsChart />
+                    <GeoHeatmap />
+                </div>
+
+                {/* Sidebar - Ocupa 2 columnas en pantallas grandes */}
+                <div className="lg:col-span-2">
+                    <AlertsSidebar />
+                </div>
             </div>
         </div>
     );

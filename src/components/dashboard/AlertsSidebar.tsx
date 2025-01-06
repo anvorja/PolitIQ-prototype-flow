@@ -2,8 +2,17 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, AlertCircle, TrendingUp, Lightbulb, Bell, ExternalLink } from 'lucide-react';
-import { alertsData } from '@/data/AlertsMockData';
+import {
+    AlertTriangle,
+    AlertCircle,
+    TrendingUp,
+    Lightbulb,
+    Bell,
+    ExternalLink,
+    Map,
+    Newspaper
+} from 'lucide-react';
+import { alertGroups } from '@/data/AlertsMockData';
 import { formatShortDate } from '@/lib/dateUtils';
 import type { Alert as AlertType } from '@/types/alerts';
 import Link from 'next/link';
@@ -18,6 +27,10 @@ const getAlertIcon = (type: AlertType['type']) => {
             return Lightbulb;
         case 'trend':
             return TrendingUp;
+        case 'regional':
+            return Map;
+        case 'media':
+            return Newspaper;
         default:
             return Bell;
     }
@@ -37,12 +50,18 @@ const getPriorityColor = (priority: AlertType['priority']) => {
 };
 
 export function AlertsSidebar() {
-    // Filtramos solo las alertas nuevas y ordenamos por prioridad y fecha
-    const recentAlerts = alertsData
-        .filter(alert => alert.status === 'new')
+    // Obtenemos todas las alertas de todos los grupos
+    const allAlerts = alertGroups.flatMap(group => group.alerts);
+
+    // Ordenamos por prioridad y fecha
+    const recentAlerts = allAlerts
         .sort((a, b) => {
             // Primero por prioridad
-            const priorityOrder = { high: 0, medium: 1, low: 2 };
+            const priorityOrder: Record<AlertType['priority'], number> = {
+                high: 0,
+                medium: 1,
+                low: 2
+            };
             const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
             if (priorityDiff !== 0) return priorityDiff;
             // Luego por fecha, más reciente primero

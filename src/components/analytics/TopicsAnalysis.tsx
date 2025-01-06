@@ -1,3 +1,5 @@
+// analytics/TopicsAnalysis.tsx
+
 "use client"
 
 import React, { useState } from 'react';
@@ -16,6 +18,7 @@ import {
 } from 'recharts';
 import { topicsAnalysisData } from '@/data/TopicsAnalysisMockData';
 import { formatShortDate } from '@/lib/dateUtils';
+import { translateMetricName, translateTooltipTerm, formatSentimentValue } from "@/lib/translateUtils";
 
 export function TopicsAnalysis() {
     const [selectedTopic, setSelectedTopic] = useState(topicsAnalysisData[0]);
@@ -52,12 +55,20 @@ export function TopicsAnalysis() {
                         <CardContent>
                             <div className="space-y-4">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Menciones</p>
-                                    <p className="text-2xl font-bold">{selectedTopic.mentions.toLocaleString()}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {translateMetricName('mentions')}
+                                    </p>
+                                    <p className="text-2xl font-bold">
+                                        {selectedTopic.mentions.toLocaleString()}
+                                    </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Sentimiento</p>
-                                    <p className="text-2xl font-bold">{selectedTopic.sentiment}%</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {translateMetricName('sentiment')}
+                                    </p>
+                                    <p className="text-2xl font-bold">
+                                        {formatSentimentValue(selectedTopic.sentiment)}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground">Engagement</p>
@@ -67,33 +78,42 @@ export function TopicsAnalysis() {
                         </CardContent>
                     </Card>
 
-                    {/* Temas Relacionados */}
+                    {/* Resto del componente... */}{/* Temas Relacionados */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">Temas Relacionados</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="h-[200px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart
-                                        data={selectedTopic.relatedTopics}
-                                        layout="vertical"
-                                        margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
-                                    >
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis type="number" domain={[0, 100]} />
-                                        <YAxis dataKey="topic" type="category" width={100} />
-                                        <Tooltip
-                                            formatter={(value: number) => [`${value}%`, 'Relación']}
-                                        />
-                                        <Bar
-                                            dataKey="strength"
-                                            fill="hsl(var(--primary))"
-                                            radius={[0, 4, 4, 0]}
-                                        />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
+                            {/* ... */}
+                            {/* Temas Relacionados */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Temas Relacionados</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="h-[200px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart
+                                                data={selectedTopic.relatedTopics}
+                                                layout="vertical"
+                                                margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                                            >
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis type="number" domain={[0, 100]} />
+                                                <YAxis dataKey="topic" type="category" width={100} />
+                                                <Tooltip
+                                                    formatter={(value: number) => [`${value}%`, 'Relación']}
+                                                />
+                                                <Bar
+                                                    dataKey="strength"
+                                                    fill="hsl(var(--primary))"
+                                                    radius={[0, 4, 4, 0]}
+                                                />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </CardContent>
                     </Card>
 
@@ -101,6 +121,23 @@ export function TopicsAnalysis() {
                     <Card className="md:col-span-2">
                         <CardHeader>
                             <CardTitle className="text-lg">Tendencia Semanal</CardTitle>
+                            <p className="text-sm text-muted-foreground">
+                                Este gráfico muestra dos métricas clave a lo largo del tiempo:
+                            </p>
+                            <div className="mt-2 space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-primary"></div>
+                                    <span className="text-sm">
+                                        {translateMetricName('mentions')} (línea azul): Cantidad de veces que se menciona el tema por día
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-destructive"></div>
+                                    <span className="text-sm">
+                                        {translateMetricName('sentiment')} (línea roja): Porcentaje de aprobación del tema (0-100%)
+                                    </span>
+                                </div>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="h-[300px]">
@@ -119,24 +156,26 @@ export function TopicsAnalysis() {
                                         <Tooltip
                                             labelFormatter={formatShortDate}
                                             formatter={(value: number, name: string) => [
-                                                name === 'sentiment' ? `${value}%` : value,
-                                                name === 'sentiment' ? 'Sentimiento' : 'Menciones'
+                                                name === 'sentiment' ? formatSentimentValue(value) : value,
+                                                translateTooltipTerm(name)
                                             ]}
                                         />
-                                        <Legend />
+                                        <Legend
+                                            formatter={(value) => translateMetricName(value)}
+                                        />
                                         <Line
                                             yAxisId="left"
                                             type="monotone"
                                             dataKey="mentions"
                                             stroke="hsl(var(--primary))"
-                                            name="Menciones"
+                                            name="mentions"
                                         />
                                         <Line
                                             yAxisId="right"
                                             type="monotone"
                                             dataKey="sentiment"
                                             stroke="hsl(var(--destructive))"
-                                            name="Sentimiento"
+                                            name="sentiment"
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>
@@ -150,6 +189,7 @@ export function TopicsAnalysis() {
                             <CardTitle className="text-lg">Principales Influenciadores</CardTitle>
                         </CardHeader>
                         <CardContent>
+                            {/* ... */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {selectedTopic.topInfluencers.map((influencer) => (
                                     <div

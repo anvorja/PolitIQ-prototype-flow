@@ -17,13 +17,14 @@ import {
 } from 'recharts';
 import { trendData, topicTrends } from '@/data/TrendsMockData';
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
-import {formatShortDate} from "@/lib/dateUtils";
+import { formatShortDate } from "@/lib/dateUtils";
+import { translateMetricName, formatSentimentValue } from "@/lib/translateUtils";
 
 export function TrendsChart() {
     return (
         <Card className="col-span-full">
             <CardHeader>
-                <CardTitle>Tendencias de Menciones y Sentimiento</CardTitle>
+                <CardTitle>Tendencias de {translateMetricName('mentions')} y {translateMetricName('sentiment')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="h-[400px] mb-6">
@@ -38,7 +39,7 @@ export function TrendsChart() {
                             <YAxis
                                 yAxisId="left"
                                 label={{
-                                    value: 'Menciones',
+                                    value: translateMetricName('mentions'),
                                     angle: -90,
                                     position: 'insideLeft'
                                 }}
@@ -48,24 +49,26 @@ export function TrendsChart() {
                                 orientation="right"
                                 domain={[0, 100]}
                                 label={{
-                                    value: 'Sentimiento %',
+                                    value: `${translateMetricName('sentiment')} %`,
                                     angle: 90,
                                     position: 'insideRight'
                                 }}
                             />
                             <Tooltip
-                                formatter={(value: number, name: string) => {
-                                    if (name === "sentiment") return `${value}%`;
-                                    return value.toLocaleString();
-                                }}
                                 labelFormatter={formatShortDate}
+                                formatter={(value: number, name: string) => [
+                                    name === 'sentiment' ? formatSentimentValue(value) : value.toLocaleString(),
+                                    translateMetricName(name)
+                                ]}
                             />
-                            <Legend />
+                            <Legend
+                                formatter={(value) => translateMetricName(value)}
+                            />
                             <Area
                                 yAxisId="left"
                                 type="monotone"
                                 dataKey="mentions"
-                                name="Menciones"
+                                name="mentions"
                                 fill="hsl(var(--primary))"
                                 fillOpacity={0.1}
                                 stroke="hsl(var(--primary))"
@@ -74,7 +77,7 @@ export function TrendsChart() {
                                 yAxisId="right"
                                 type="monotone"
                                 dataKey="sentiment"
-                                name="Sentimiento"
+                                name="sentiment"
                                 stroke="hsl(var(--destructive))"
                                 strokeWidth={2}
                             />
@@ -92,7 +95,7 @@ export function TrendsChart() {
                             <div>
                                 <h3 className="font-medium">{topic.topic}</h3>
                                 <p className="text-sm text-muted-foreground">
-                                    {topic.count.toLocaleString()} menciones
+                                    {topic.count.toLocaleString()} {translateMetricName('mentions').toLowerCase()}
                                 </p>
                             </div>
                             <div className={`flex items-center ${
