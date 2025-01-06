@@ -4,6 +4,8 @@
 
 import { useState } from 'react';
 import { TakeActionModal } from './TakeActionModal';
+import Link from 'next/link';
+import {useToast} from "@/hooks/use-toast";
 import {
     Dialog,
     DialogContent,
@@ -48,6 +50,7 @@ const formatNumber = (num: number): string => {
 };
 
 export function AlertDetailModal({ alert, onCloseAction }: AlertDetailModalProps) {
+    const { toast } = useToast();
     const addAction = useActionStore(state => state.addAction);
     const [showActionModal, setShowActionModal] = useState(false);
 
@@ -55,36 +58,61 @@ export function AlertDetailModal({ alert, onCloseAction }: AlertDetailModalProps
 
     const handleActionSubmit = async (data: z.infer<typeof actionFormSchema>) => {
 
-        // Convertir IDs a objetos ActionParticipant completos
-        const assignedParticipants: ActionParticipant[] = data.assignedTo
-            .map(id => teamMembers.find(member => member.id === id))
-            .filter((member): member is TeamMember => member !== undefined) // Cambiamos el type predicate
-            .map(member => ({
-                id: member.id,
-                name: member.name,
-                role: member.role,
-                email: member.email
-                // No incluimos department porque ActionParticipant no lo requiere
-            }));
+        try{
 
-        const newAction = {
-            id: uuidv4(),
-            alertId: alert.id,
-            status: 'pending' as const,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            responses: [],
-            type: data.type as ActionType,
-            title: data.title,
-            description: data.description,
-            deadline: data.deadline ? data.deadline.toISOString() : new Date().toISOString(),
-            assignedTo: assignedParticipants,
-            priority: data.priority,
-            notes: [data.notes].filter(Boolean),
-        };
+            // Convertir IDs a objetos ActionParticipant completos
+            const assignedParticipants: ActionParticipant[] = data.assignedTo
+                .map(id => teamMembers.find(member => member.id === id))
+                .filter((member): member is TeamMember => member !== undefined) // Cambiamos el type predicate
+                .map(member => ({
+                    id: member.id,
+                    name: member.name,
+                    role: member.role,
+                    email: member.email
+                    // No incluimos department porque ActionParticipant no lo requiere
+                }));
 
-        addAction(newAction);
-        setShowActionModal(false);
+            const newAction = {
+                id: uuidv4(),
+                alertId: alert.id,
+                status: 'pending' as const,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                responses: [],
+                type: data.type as ActionType,
+                title: data.title,
+                description: data.description,
+                deadline: data.deadline ? data.deadline.toISOString() : new Date().toISOString(),
+                assignedTo: assignedParticipants,
+                priority: data.priority,
+                notes: [data.notes].filter(Boolean),
+            };
+
+            addAction(newAction);
+            setShowActionModal(false);
+
+            // Mostrar toast con link a acciones
+            toast({
+                title: "Acción creada correctamente",
+                description: (
+                    <div className="flex flex-col gap-2">
+                        <p>La acción se ha registrado exitosamente.</p>
+                        <Link href="/actions" className="text-primary hover:underline">
+                            Ver todas las acciones
+                        </Link>
+                    </div>
+                ),
+            });
+
+        } catch (error) {
+            console.error('Error al procesar la acción:', error);
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Hubo un error al crear la acción. Por favor, intente nuevamente.",
+            });
+        }
+
     };
 
     return (
