@@ -16,10 +16,9 @@ export default function AnalyticsPage() {
 
             <div className="grid gap-4">
                 <TrendsChart />
-                {/*TODO: implementar más componentes de análisis*/}
                 <InfluencersTable />
-                <TopicsAnalysis></TopicsAnalysis>
-                {/* TopicsAnalysis se agregará próximamente */}
+                <TopicsAnalysis />
+                {/*TODO: implementar más componentes de análisis*/}
             </div>
         </div>
     );
