@@ -29,6 +29,8 @@ import { v4 as uuidv4 } from 'uuid';
 import {useActionStore} from "@/store/actionsTakenStore";
 import type { actionFormSchema } from './TakeActionModal';
 import {z} from "zod";
+import {ActionParticipant, ActionType} from "@/types/alertEvents";
+import {TeamMember, teamMembers} from "@/data/TeamMockData";
 
 interface AlertDetailModalProps {
     alert: AlertType | null;
@@ -52,6 +54,19 @@ export function AlertDetailModal({ alert, onCloseAction }: AlertDetailModalProps
     if (!alert) return null;
 
     const handleActionSubmit = async (data: z.infer<typeof actionFormSchema>) => {
+
+        // Convertir IDs a objetos ActionParticipant completos
+        const assignedParticipants: ActionParticipant[] = data.assignedTo
+            .map(id => teamMembers.find(member => member.id === id))
+            .filter((member): member is TeamMember => member !== undefined) // Cambiamos el type predicate
+            .map(member => ({
+                id: member.id,
+                name: member.name,
+                role: member.role,
+                email: member.email
+                // No incluimos department porque ActionParticipant no lo requiere
+            }));
+
         const newAction = {
             id: uuidv4(),
             alertId: alert.id,
@@ -59,8 +74,13 @@ export function AlertDetailModal({ alert, onCloseAction }: AlertDetailModalProps
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             responses: [],
-            notes: [],
-            ...data,
+            type: data.type as ActionType,
+            title: data.title,
+            description: data.description,
+            deadline: data.deadline ? data.deadline.toISOString() : new Date().toISOString(),
+            assignedTo: assignedParticipants,
+            priority: data.priority,
+            notes: [data.notes].filter(Boolean),
         };
 
         addAction(newAction);

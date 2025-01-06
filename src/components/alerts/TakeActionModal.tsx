@@ -47,15 +47,20 @@ import {useEffect} from "react";
 
 // Schema para validación del formulario
 export const actionFormSchema = z.object({
-    type: z.string().min(1, "El tipo es requerido"),
+    type: z.enum(['emergency-meeting', 'press-release', 'social-media',
+        'engagement-event', 'message-adjustment', 'monitoring',
+        'coordination', 'legal', 'custom'] as const).optional(),
     title: z.string().min(1, "El título es requerido"),
     description: z.string().min(1, "La descripción es requerida"),
     deadline: z.date({
         required_error: "La fecha límite es requerida",
-    }).optional(),  // Solo opcional, sin nullable
+    }).optional(),
     assignedTo: z.array(z.string()).min(1, "Debe asignar al menos una persona"),
     priority: z.enum(["high", "medium", "low"]),
     notes: z.string().optional().default(''),
+}).refine((data) => data.type, {
+    message: "El tipo de acción es requerido",
+    path: ["type"]
 });
 
 interface TakeActionModalProps {
@@ -75,7 +80,7 @@ export function TakeActionModal({
     const form = useForm<z.infer<typeof actionFormSchema>>({
         resolver: zodResolver(actionFormSchema),
         defaultValues: {
-            type: '',
+            type: undefined,
             title: '',
             description: '',
             deadline: undefined,
@@ -89,7 +94,7 @@ export function TakeActionModal({
     useEffect(() => {
         if (isOpen) {
             form.reset({
-                type: '',
+                type: undefined,
                 title: '',
                 description: '',
                 deadline: undefined,
