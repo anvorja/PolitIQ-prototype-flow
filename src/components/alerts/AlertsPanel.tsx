@@ -232,7 +232,7 @@ export function AlertsPanel() {
             {/* Modal de detalles */}
             <AlertDetailModal
                 alert={selectedAlert}
-                onClose={() => setSelectedAlert(null)}
+                onCloseAction={() => setSelectedAlert(null)}
             />
         </div>
     );
