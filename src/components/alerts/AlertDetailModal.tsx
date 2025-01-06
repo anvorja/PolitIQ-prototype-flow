@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { TakeActionModal } from './TakeActionModal';
 import Link from 'next/link';
-import {useToast} from "@/hooks/use-toast";
+import {useToast} from "@/hooks/use-toast"
 import {
     Dialog,
     DialogContent,
