@@ -1,4 +1,4 @@
-// data/AlertsMockData.ts
+// src/data/AlertsMockData.ts
 
 import { AlertGroup } from '@/types/alerts';
 
