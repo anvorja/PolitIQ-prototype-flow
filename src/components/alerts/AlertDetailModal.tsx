@@ -1,5 +1,9 @@
 // components/alerts/AlertDetailModal.tsx
 
+"use client"
+
+import { useState } from 'react';
+import { TakeActionModal } from './TakeActionModal';
 import {
     Dialog,
     DialogContent,
@@ -21,10 +25,16 @@ import {
 } from 'lucide-react';
 import type { Alert as AlertType } from '@/types/alerts';
 import { formatLongDate } from '@/lib/dateUtils';
+import { v4 as uuidv4 } from 'uuid';
+import {useActionStore} from "@/store/actionsTakenStore";
+import type { actionFormSchema } from './TakeActionModal';
+import {z} from "zod";
+import {ActionParticipant, ActionType} from "@/types/alertEvents";
+import {TeamMember, teamMembers} from "@/data/TeamMockData";
 
 interface AlertDetailModalProps {
     alert: AlertType | null;
-    onClose: () => void;
+    onCloseAction: () => void;
 }
 
 const formatNumber = (num: number): string => {
@@ -37,145 +47,193 @@ const formatNumber = (num: number): string => {
     return num.toString();
 };
 
-export function AlertDetailModal({ alert, onClose }: AlertDetailModalProps) {
+export function AlertDetailModal({ alert, onCloseAction }: AlertDetailModalProps) {
+    const addAction = useActionStore(state => state.addAction);
+    const [showActionModal, setShowActionModal] = useState(false);
+
     if (!alert) return null;
 
+    const handleActionSubmit = async (data: z.infer<typeof actionFormSchema>) => {
+
+        // Convertir IDs a objetos ActionParticipant completos
+        const assignedParticipants: ActionParticipant[] = data.assignedTo
+            .map(id => teamMembers.find(member => member.id === id))
+            .filter((member): member is TeamMember => member !== undefined) // Cambiamos el type predicate
+            .map(member => ({
+                id: member.id,
+                name: member.name,
+                role: member.role,
+                email: member.email
+                // No incluimos department porque ActionParticipant no lo requiere
+            }));
+
+        const newAction = {
+            id: uuidv4(),
+            alertId: alert.id,
+            status: 'pending' as const,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            responses: [],
+            type: data.type as ActionType,
+            title: data.title,
+            description: data.description,
+            deadline: data.deadline ? data.deadline.toISOString() : new Date().toISOString(),
+            assignedTo: assignedParticipants,
+            priority: data.priority,
+            notes: [data.notes].filter(Boolean),
+        };
+
+        addAction(newAction);
+        setShowActionModal(false);
+    };
+
     return (
-        <Dialog open={Boolean(alert)} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <div className="flex items-center gap-2">
-                        {alert.priority === 'high' && (
-                            <AlertTriangle className="w-5 h-5 text-destructive" />
-                        )}
-                        <DialogTitle>{alert.title}</DialogTitle>
-                    </div>
-                    <DialogDescription>
-                        {alert.description}
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-6">
-                    {/* Estadísticas principales */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {alert.reach && (
-                            <div className="p-3 bg-muted rounded-lg">
-                                <div className="flex items-center gap-2 text-sm font-medium">
-                                    <Users className="w-4 h-4" />
-                                    <span>Alcance</span>
-                                </div>
-                                <p className="text-2xl font-bold mt-1">
-                                    {formatNumber(alert.reach)}
-                                </p>
-                            </div>
-                        )}
-                        {alert.sentiment && (
-                            <div className="p-3 bg-muted rounded-lg">
-                                <div className="flex items-center gap-2 text-sm font-medium">
-                                    <AlertCircle className="w-4 h-4" />
-                                    <span>Aprobación</span>
-                                </div>
-                                <p className="text-2xl font-bold mt-1">
-                                    {alert.sentiment}%
-                                </p>
-                            </div>
-                        )}
-                        {alert.changePercent && (
-                            <div className="p-3 bg-muted rounded-lg">
-                                <div className="flex items-center gap-2 text-sm font-medium">
-                                    {alert.changePercent > 0 ? (
-                                        <TrendingUp className="w-4 h-4 text-green-500" />
-                                    ) : (
-                                        <TrendingDown className="w-4 h-4 text-destructive" />
-                                    )}
-                                    <span>Cambio</span>
-                                </div>
-                                <p className={`text-2xl font-bold mt-1 ${
-                                    alert.changePercent > 0 ? 'text-green-500' : 'text-destructive'
-                                }`}>
-                                    {Math.abs(alert.changePercent)}%
-                                </p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Metadatos */}
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+        <>
+            <Dialog open={Boolean(alert)} onOpenChange={onCloseAction}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
                         <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            <span>{alert.region || alert.department || alert.city || 'Nacional'}</span>
+                            {alert.priority === 'high' && (
+                                <AlertTriangle className="w-5 h-5 text-destructive" />
+                            )}
+                            <DialogTitle>{alert.title}</DialogTitle>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{formatLongDate(alert.timestamp.split('T')[0])}</span>
-                        </div>
-                    </div>
+                        <DialogDescription>
+                            {alert.description}
+                        </DialogDescription>
+                    </DialogHeader>
 
-                    {/* Keywords */}
-                    {alert.keywords && alert.keywords.length > 0 && (
-                        <div>
-                            <h4 className="text-sm font-medium mb-2">Palabras Clave</h4>
-                            <div className="flex flex-wrap gap-2">
-                                {alert.keywords.map((keyword) => (
-                                    <span
-                                        key={keyword}
-                                        className="text-xs px-2 py-1 rounded-full bg-muted flex items-center gap-1"
-                                    >
+                    <div className="space-y-6">
+                        {/* Estadísticas principales */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {alert.reach && (
+                                <div className="p-3 bg-muted rounded-lg">
+                                    <div className="flex items-center gap-2 text-sm font-medium">
+                                        <Users className="w-4 h-4" />
+                                        <span>Alcance</span>
+                                    </div>
+                                    <p className="text-2xl font-bold mt-1">
+                                        {formatNumber(alert.reach)}
+                                    </p>
+                                </div>
+                            )}
+                            {alert.sentiment && (
+                                <div className="p-3 bg-muted rounded-lg">
+                                    <div className="flex items-center gap-2 text-sm font-medium">
+                                        <AlertCircle className="w-4 h-4" />
+                                        <span>Aprobación</span>
+                                    </div>
+                                    <p className="text-2xl font-bold mt-1">
+                                        {alert.sentiment}%
+                                    </p>
+                                </div>
+                            )}
+                            {alert.changePercent && (
+                                <div className="p-3 bg-muted rounded-lg">
+                                    <div className="flex items-center gap-2 text-sm font-medium">
+                                        {alert.changePercent > 0 ? (
+                                            <TrendingUp className="w-4 h-4 text-green-500" />
+                                        ) : (
+                                            <TrendingDown className="w-4 h-4 text-destructive" />
+                                        )}
+                                        <span>Cambio</span>
+                                    </div>
+                                    <p className={`text-2xl font-bold mt-1 ${
+                                        alert.changePercent > 0 ? 'text-green-500' : 'text-destructive'
+                                    }`}>
+                                        {Math.abs(alert.changePercent)}%
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Metadatos */}
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4" />
+                                <span>{alert.region || alert.department || alert.city || 'Nacional'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4" />
+                                <span>{formatLongDate(alert.timestamp.split('T')[0])}</span>
+                            </div>
+                        </div>
+
+                        {/* Keywords */}
+                        {alert.keywords && alert.keywords.length > 0 && (
+                            <div>
+                                <h4 className="text-sm font-medium mb-2">Palabras Clave</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {alert.keywords.map((keyword) => (
+                                        <span
+                                            key={keyword}
+                                            className="text-xs px-2 py-1 rounded-full bg-muted flex items-center gap-1"
+                                        >
                                         <Hash className="w-3 h-3" />
-                                        {keyword}
+                                            {keyword}
                                     </span>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Influencers */}
-                    {alert.influencers && alert.influencers.length > 0 && (
-                        <div>
-                            <h4 className="text-sm font-medium mb-2">Influenciadores</h4>
-                            <div className="grid grid-cols-2 gap-2">
-                                {alert.influencers.map((influencer) => (
-                                    <div
-                                        key={influencer}
-                                        className="flex items-center gap-2 p-2 bg-muted rounded-lg text-sm"
-                                    >
-                                        <Users2 className="w-4 h-4" />
-                                        {influencer}
-                                    </div>
-                                ))}
+                        {/* Influencers */}
+                        {alert.influencers && alert.influencers.length > 0 && (
+                            <div>
+                                <h4 className="text-sm font-medium mb-2">Influenciadores</h4>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {alert.influencers.map((influencer) => (
+                                        <div
+                                            key={influencer}
+                                            className="flex items-center gap-2 p-2 bg-muted rounded-lg text-sm"
+                                        >
+                                            <Users2 className="w-4 h-4" />
+                                            {influencer}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Acciones Recomendadas */}
-                    {alert.actions && alert.actions.length > 0 && (
-                        <div>
-                            <h4 className="text-sm font-medium mb-2">Acciones Recomendadas</h4>
-                            <div className="space-y-2">
-                                {alert.actions.map((action, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-start gap-2 p-3 bg-muted rounded-lg text-sm"
-                                    >
-                                        <span className="font-medium">{index + 1}.</span>
-                                        <span>{action}</span>
-                                    </div>
-                                ))}
+                        {/* Acciones Recomendadas */}
+                        {alert.actions && alert.actions.length > 0 && (
+                            <div>
+                                <h4 className="text-sm font-medium mb-2">Acciones Recomendadas</h4>
+                                <div className="space-y-2">
+                                    {alert.actions.map((action, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-start gap-2 p-3 bg-muted rounded-lg text-sm"
+                                        >
+                                            <span className="font-medium">{index + 1}.</span>
+                                            <span>{action}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Botones de acción */}
-                    <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={onClose}>
-                            Cerrar
-                        </Button>
-                        <Button>
-                            Tomar Acción
-                        </Button>
+                        {/* Botones de acción */}
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={onCloseAction}>
+                                Cerrar
+                            </Button>
+                            <Button onClick={() => setShowActionModal(true)}>
+                                Tomar Acción
+                            </Button>
+                        </div>
                     </div>
-                </div>
-            </DialogContent>
-        </Dialog>
+                </DialogContent>
+            </Dialog>
+
+            {alert && (
+                <TakeActionModal
+                    alert={alert}
+                    isOpen={showActionModal}
+                    onCloseAction={() => setShowActionModal(false)}
+                    onSubmitAction={handleActionSubmit}
+                />
+            )}
+        </>
     );
 }
