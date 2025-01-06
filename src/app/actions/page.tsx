@@ -1,44 +1,494 @@
-// src/app/actions/page.tsx
+// // src/app/actions/page.tsx
+//
+// "use client"
+//
+// import { format } from 'date-fns';
+// import { es } from 'date-fns/locale';
+// import { useActionStore } from "@/store/actionsTakenStore";
+// import {
+//     Card,
+//     CardContent,
+//     CardDescription,
+//     CardHeader,
+//     CardTitle,
+// } from "@/components/ui/card";
+// import {
+//     Select,
+//     SelectContent,
+//     SelectItem,
+//     SelectTrigger,
+//     SelectValue,
+// } from "@/components/ui/select";
+// import {
+//     AlertCircle,
+//     Calendar,
+//     CheckCircle2,
+//     Clock,
+//     Filter,
+//     Users2,
+//     XCircle,
+// } from "lucide-react";
+// import { useState } from "react";
+// import { Badge } from "@/components/ui/badge";
+// import { ActionStatus } from "@/types/alertEvents";
+//
+// // Función auxiliar para obtener el color según el estado
+// const getStatusColor = (status: ActionStatus) => {
+//     const colors = {
+//         'pending': 'bg-yellow-100 text-yellow-800',
+//         'in-progress': 'bg-blue-100 text-blue-800',
+//         'completed': 'bg-green-100 text-green-800',
+//         'cancelled': 'bg-red-100 text-red-800'
+//     };
+//     return colors[status];
+// };
+//
+// // Función auxiliar para traducir el estado
+// const translateStatus = (status: ActionStatus) => {
+//     const translations = {
+//         'pending': 'Pendiente',
+//         'in-progress': 'En Progreso',
+//         'completed': 'Completada',
+//         'cancelled': 'Cancelada'
+//     };
+//     return translations[status];
+// };
+//
+// // Función para obtener el ícono según el estado
+// const getStatusIcon = (status: ActionStatus) => {
+//     const icons = {
+//         'pending': Clock,
+//         'in-progress': AlertCircle,
+//         'completed': CheckCircle2,
+//         'cancelled': XCircle
+//     };
+//     return icons[status];
+// };
+//
+// export default function ActionsPage() {
+//     const actions = useActionStore(state => state.actions);
+//     const [statusFilter, setStatusFilter] = useState<ActionStatus | 'all'>('all');
+//     const [priorityFilter, setPriorityFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+//
+//     // Filtrar acciones
+//     const filteredActions = actions.filter(action => {
+//         const matchStatus = statusFilter === 'all' || action.status === statusFilter;
+//         const matchPriority = priorityFilter === 'all' || action.priority === priorityFilter;
+//         return matchStatus && matchPriority;
+//     });
+//
+//     return (
+//         <div className="container mx-auto py-6 space-y-6">
+//             <div className="flex justify-between items-start">
+//                 <div>
+//                     <h1 className="text-3xl font-bold tracking-tight">Centro de Acciones</h1>
+//                     <p className="text-muted-foreground">
+//                         Seguimiento y gestión de acciones tomadas
+//                     </p>
+//                 </div>
+//
+//                 {/* Estadísticas resumidas */}
+//                 <div className="flex gap-4">
+//                     <div className="text-sm">
+//                         <span className="text-muted-foreground">Total Acciones:</span>
+//                         <span className="ml-1 font-medium">{actions.length}</span>
+//                     </div>
+//                     <div className="text-sm">
+//                         <span className="text-muted-foreground">Pendientes:</span>
+//                         <span className="ml-1 font-medium">
+//                             {actions.filter(a => a.status === 'pending').length}
+//                         </span>
+//                     </div>
+//                     <div className="text-sm">
+//                         <span className="text-muted-foreground">Completadas:</span>
+//                         <span className="ml-1 font-medium">
+//                             {actions.filter(a => a.status === 'completed').length}
+//                         </span>
+//                     </div>
+//                 </div>
+//             </div>
+//
+//             {/* Filtros */}
+//             <Card>
+//                 <CardContent className="pt-6">
+//                     <div className="flex gap-4 items-center">
+//                         <Filter className="w-4 h-4 text-muted-foreground" />
+//                         <div className="flex gap-4">
+//                             <Select
+//                                 value={statusFilter}
+//                                 onValueChange={(value: ActionStatus | 'all') => setStatusFilter(value)}
+//                             >
+//                                 <SelectTrigger className="w-[180px]">
+//                                     <SelectValue placeholder="Filtrar por estado" />
+//                                 </SelectTrigger>
+//                                 <SelectContent>
+//                                     <SelectItem value="all">Todos los estados</SelectItem>
+//                                     <SelectItem value="pending">Pendientes</SelectItem>
+//                                     <SelectItem value="in-progress">En Progreso</SelectItem>
+//                                     <SelectItem value="completed">Completadas</SelectItem>
+//                                     <SelectItem value="cancelled">Canceladas</SelectItem>
+//                                 </SelectContent>
+//                             </Select>
+//
+//                             <Select
+//                                 value={priorityFilter}
+//                                 onValueChange={(value: 'all' | 'high' | 'medium' | 'low') => setPriorityFilter(value)}
+//                             >
+//                                 <SelectTrigger className="w-[180px]">
+//                                     <SelectValue placeholder="Filtrar por prioridad" />
+//                                 </SelectTrigger>
+//                                 <SelectContent>
+//                                     <SelectItem value="all">Todas las prioridades</SelectItem>
+//                                     <SelectItem value="high">Alta</SelectItem>
+//                                     <SelectItem value="medium">Media</SelectItem>
+//                                     <SelectItem value="low">Baja</SelectItem>
+//                                 </SelectContent>
+//                             </Select>
+//                         </div>
+//                     </div>
+//                 </CardContent>
+//             </Card>
+//
+//             {/* Lista de Acciones */}
+//             <div className="grid gap-4">
+//                 {filteredActions.map(action => {
+//                     const StatusIcon = getStatusIcon(action.status);
+//                     return (
+//                         <Card key={action.id} className="hover:bg-accent/5 transition-colors">
+//                             <CardHeader className="pb-2">
+//                                 <div className="flex justify-between items-start">
+//                                     <div className="space-y-1">
+//                                         <CardTitle className="flex items-center gap-2">
+//                                             {action.title}
+//                                             <Badge
+//                                                 variant={action.priority === 'high' ? 'destructive' :
+//                                                     action.priority === 'medium' ? 'secondary' : 'outline'}
+//                                             >
+//                                                 {action.priority === 'high' ? 'Alta' :
+//                                                     action.priority === 'medium' ? 'Media' : 'Baja'}
+//                                             </Badge>
+//                                         </CardTitle>
+//                                         <CardDescription>{action.description}</CardDescription>
+//                                     </div>
+//                                     <Badge
+//                                         className={`flex items-center gap-1 ${getStatusColor(action.status)}`}
+//                                     >
+//                                         <StatusIcon className="w-4 h-4" />
+//                                         {translateStatus(action.status)}
+//                                     </Badge>
+//                                 </div>
+//                             </CardHeader>
+//                             <CardContent>
+//                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+//                                     <div className="flex items-center gap-2 text-muted-foreground">
+//                                         <Calendar className="w-4 h-4" />
+//                                         <span>Límite: {format(new Date(action.deadline), 'PPP', { locale: es })}</span>
+//                                     </div>
+//                                     <div className="flex items-center gap-2 text-muted-foreground">
+//                                         <Users2 className="w-4 h-4" />
+//                                         <span>Asignados: {action.assignedTo.length} personas</span>
+//                                     </div>
+//                                     {action.notes && action.notes.length > 0 && (
+//                                         <div className="col-span-2 text-muted-foreground">
+//                                             Notas: {action.notes[0]}
+//                                         </div>
+//                                     )}
+//                                 </div>
+//                             </CardContent>
+//                         </Card>
+//                     );
+//                 })}
+//                 {filteredActions.length === 0 && (
+//                     <Card>
+//                         <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
+//                             No hay acciones que coincidan con los filtros seleccionados
+//                         </CardContent>
+//                     </Card>
+//                 )}
+//             </div>
+//         </div>
+//     );
+// }
 
 // "use client"
 //
 // import { format } from 'date-fns';
 // import { es } from 'date-fns/locale';
-// import {useActionStore} from "@/store/actionsTakenStore";
+// import { useActionStore } from "@/store/actionsTakenStore";
+// import {
+//     Card,
+//     CardContent,
+//     CardDescription,
+//     CardHeader,
+//     CardTitle,
+// } from "@/components/ui/card";
+// import {
+//     Select,
+//     SelectContent,
+//     SelectItem,
+//     SelectTrigger,
+//     SelectValue,
+// } from "@/components/ui/select";
+// import {
+//     AlertCircle,
+//     Calendar,
+//     CheckCircle2,
+//     Clock,
+//     Filter,
+//     Users2,
+//     XCircle,
+//     ArrowDownAZ,
+//     ArrowUpAZ,
+// } from "lucide-react";
+// import { useState } from "react";
+// import { Badge } from "@/components/ui/badge";
+// import { ActionStatus, ActionPriority } from "@/types/alertEvents";
+// import { Button } from "@/components/ui/button";
+//
+// type SortField = 'deadline' | 'priority' | 'status' | 'createdAt';
+// type SortOrder = 'asc' | 'desc';
+//
+// interface SortConfig {
+//     field: SortField;
+//     order: SortOrder;
+// }
+//
+// // Traducción de estados
+// const translateStatus = (status: ActionStatus): string => ({
+//     pending: 'Pendiente',
+//     'in-progress': 'En Progreso',
+//     completed: 'Completada',
+//     cancelled: 'Cancelada'
+// })[status];
+//
+// // Traducción de prioridades
+// const translatePriority = (priority: ActionPriority): string => ({
+//     high: 'Alta',
+//     medium: 'Media',
+//     low: 'Baja'
+// })[priority];
+//
+// // Obtener el color del estado
+// const getStatusColor = (status: ActionStatus): string => ({
+//     pending: 'bg-yellow-100 text-yellow-800',
+//     'in-progress': 'bg-blue-100 text-blue-800',
+//     completed: 'bg-green-100 text-green-800',
+//     cancelled: 'bg-red-100 text-red-800'
+// })[status];
+//
+// // Obtener el ícono del estado
+// const getStatusIcon = (status: ActionStatus) => {
+//     const icons = {
+//         pending: Clock,
+//         'in-progress': AlertCircle,
+//         completed: CheckCircle2,
+//         cancelled: XCircle
+//     };
+//     return icons[status];
+// };
 //
 // export default function ActionsPage() {
 //     const actions = useActionStore(state => state.actions);
+//     const [statusFilter, setStatusFilter] = useState<ActionStatus | 'all'>('all');
+//     const [priorityFilter, setPriorityFilter] = useState<ActionPriority | 'all'>('all');
+//     const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'deadline', order: 'asc' });
+//
+//     // Función de ordenamiento
+//     const sortActions = (a: any, b: any) => {
+//         const order = sortConfig.order === 'asc' ? 1 : -1;
+//
+//         switch (sortConfig.field) {
+//             case 'deadline':
+//                 return (new Date(a.deadline).getTime() - new Date(b.deadline).getTime()) * order;
+//             case 'priority': {
+//                 const priorityOrder = { high: 0, medium: 1, low: 2 };
+//                 return (priorityOrder[a.priority] - priorityOrder[b.priority]) * order;
+//             }
+//             case 'status': {
+//                 const statusOrder = { pending: 0, 'in-progress': 1, completed: 2, cancelled: 3 };
+//                 return (statusOrder[a.status] - statusOrder[b.status]) * order;
+//             }
+//             case 'createdAt':
+//                 return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * order;
+//             default:
+//                 return 0;
+//         }
+//     };
+//
+//     // Toggle orden de clasificación
+//     const handleSort = (field: SortField) => {
+//         setSortConfig(current => ({
+//             field,
+//             order: current.field === field && current.order === 'asc' ? 'desc' : 'asc'
+//         }));
+//     };
+//
+//     // Filtrar y ordenar acciones
+//     const filteredAndSortedActions = actions
+//         .filter(action => {
+//             const matchStatus = statusFilter === 'all' || action.status === statusFilter;
+//             const matchPriority = priorityFilter === 'all' || action.priority === priorityFilter;
+//             return matchStatus && matchPriority;
+//         })
+//         .sort(sortActions);
+//
+//     // Renderizar botón de ordenamiento
+//     const SortButton = ({ field, label }: { field: SortField, label: string }) => (
+//         <Button
+//             variant="ghost"
+//             size="sm"
+//             className={`flex items-center gap-2 ${sortConfig.field === field ? 'text-primary' : ''}`}
+//             onClick={() => handleSort(field)}
+//         >
+//             {label}
+//             {sortConfig.field === field && (
+//                 sortConfig.order === 'asc' ? <ArrowUpAZ className="h-4 w-4" /> : <ArrowDownAZ className="h-4 w-4" />
+//             )}
+//         </Button>
+//     );
 //
 //     return (
-//         <div className="container mx-auto py-6">
-//             <h1 className="text-2xl font-bold mb-6">Seguimiento de Acciones</h1>
+//         <div className="container mx-auto py-6 space-y-6">
+//             <div className="flex justify-between items-start">
+//                 <div>
+//                     <h1 className="text-3xl font-bold tracking-tight">Centro de Acciones</h1>
+//                     <p className="text-muted-foreground">
+//                         Seguimiento y gestión de acciones tomadas
+//                     </p>
+//                 </div>
 //
-//             <div className="grid gap-4">
-//                 {actions.map(action => (
-//                     <div
-//                         key={action.id}
-//                         className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow"
-//                     >
-//                         <div className="flex justify-between items-start mb-2">
-//                             <h3 className="text-lg font-semibold">{action.title}</h3>
-//                             <span className={`px-2 py-1 rounded text-sm ${
-//                                 action.priority === 'high' ? 'bg-red-100 text-red-800' :
-//                                     action.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-//                                         'bg-green-100 text-green-800'
-//                             }`}>
-//                                 {action.priority === 'high' ? 'Alta' :
-//                                     action.priority === 'medium' ? 'Media' : 'Baja'}
-//                             </span>
+//                 {/* Estadísticas */}
+//                 <div className="flex gap-4">
+//                     <div className="text-sm">
+//                         <span className="text-muted-foreground">Total:</span>
+//                         <span className="ml-1 font-medium">{actions.length}</span>
+//                     </div>
+//                     <div className="text-sm">
+//                         <span className="text-muted-foreground">Pendientes:</span>
+//                         <span className="ml-1 font-medium">
+//                             {actions.filter(a => a.status === 'pending').length}
+//                         </span>
+//                     </div>
+//                     <div className="text-sm">
+//                         <span className="text-muted-foreground">Completadas:</span>
+//                         <span className="ml-1 font-medium">
+//                             {actions.filter(a => a.status === 'completed').length}
+//                         </span>
+//                     </div>
+//                 </div>
+//             </div>
+//
+//             {/* Filtros y Ordenamiento */}
+//             <Card>
+//                 <CardContent className="pt-6">
+//                     <div className="flex gap-4 items-center justify-between">
+//                         <div className="flex gap-4 items-center">
+//                             <Filter className="w-4 h-4 text-muted-foreground" />
+//                             <Select
+//                                 value={statusFilter}
+//                                 onValueChange={(value: ActionStatus | 'all') => setStatusFilter(value)}
+//                             >
+//                                 <SelectTrigger className="w-[180px]">
+//                                     <SelectValue placeholder="Filtrar por estado" />
+//                                 </SelectTrigger>
+//                                 <SelectContent>
+//                                     <SelectItem value="all">Todos los estados</SelectItem>
+//                                     {['pending', 'in-progress', 'completed', 'cancelled'].map((status) => (
+//                                         <SelectItem key={status} value={status}>
+//                                             {translateStatus(status as ActionStatus)}
+//                                         </SelectItem>
+//                                     ))}
+//                                 </SelectContent>
+//                             </Select>
+//
+//                             <Select
+//                                 value={priorityFilter}
+//                                 onValueChange={(value: ActionPriority | 'all') => setPriorityFilter(value as any)}
+//                             >
+//                                 <SelectTrigger className="w-[180px]">
+//                                     <SelectValue placeholder="Filtrar por prioridad" />
+//                                 </SelectTrigger>
+//                                 <SelectContent>
+//                                     <SelectItem value="all">Todas las prioridades</SelectItem>
+//                                     {['high', 'medium', 'low'].map((priority) => (
+//                                         <SelectItem key={priority} value={priority}>
+//                                             {translatePriority(priority as ActionPriority)}
+//                                         </SelectItem>
+//                                     ))}
+//                                 </SelectContent>
+//                             </Select>
 //                         </div>
 //
-//                         <p className="text-gray-600 mb-2">{action.description}</p>
-//
-//                         <div className="grid grid-cols-2 gap-2 text-sm text-gray-500">
-//                             <div>Fecha límite: {format(new Date(action.deadline), 'PPP', { locale: es })}</div>
-//                             <div>Estado: {action.status}</div>
+//                         <div className="flex items-center gap-4">
+//                             <SortButton field="deadline" label="Fecha límite" />
+//                             <SortButton field="priority" label="Prioridad" />
+//                             <SortButton field="status" label="Estado" />
+//                             <SortButton field="createdAt" label="Fecha de creación" />
 //                         </div>
 //                     </div>
-//                 ))}
+//                 </CardContent>
+//             </Card>
+//
+//             {/* Lista de Acciones */}
+//             <div className="grid gap-4">
+//                 {filteredAndSortedActions.map(action => {
+//                     const StatusIcon = getStatusIcon(action.status);
+//                     return (
+//                         <Card key={action.id} className="hover:bg-accent/5 transition-colors">
+//                             <CardHeader className="pb-2">
+//                                 <div className="flex justify-between items-start">
+//                                     <div className="space-y-1">
+//                                         <CardTitle className="flex items-center gap-2">
+//                                             {action.title}
+//                                             <Badge
+//                                                 variant={action.priority === 'high' ? 'destructive' :
+//                                                     action.priority === 'medium' ? 'secondary' : 'outline'}
+//                                             >
+//                                                 {translatePriority(action.priority)}
+//                                             </Badge>
+//                                         </CardTitle>
+//                                         <CardDescription>{action.description}</CardDescription>
+//                                     </div>
+//                                     <Badge
+//                                         className={`flex items-center gap-1 ${getStatusColor(action.status)}`}
+//                                     >
+//                                         <StatusIcon className="w-4 h-4" />
+//                                         {translateStatus(action.status)}
+//                                     </Badge>
+//                                 </div>
+//                             </CardHeader>
+//                             <CardContent>
+//                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+//                                     <div className="flex items-center gap-2 text-muted-foreground">
+//                                         <Calendar className="w-4 h-4" />
+//                                         <span>Límite: {format(new Date(action.deadline), 'PPP', { locale: es })}</span>
+//                                     </div>
+//                                     <div className="flex items-center gap-2 text-muted-foreground">
+//                                         <Users2 className="w-4 h-4" />
+//                                         <span>Asignados: {action.assignedTo.length} personas</span>
+//                                     </div>
+//                                     <div className="flex items-center gap-2 text-muted-foreground">
+//                                         <Clock className="w-4 h-4" />
+//                                         <span>Creado: {format(new Date(action.createdAt), 'PPP', { locale: es })}</span>
+//                                     </div>
+//                                     {action.notes && action.notes.length > 0 && (
+//                                         <div className="md:col-span-2 text-muted-foreground">
+//                                             Notas: {action.notes[0]}
+//                                         </div>
+//                                     )}
+//                                 </div>
+//                             </CardContent>
+//                         </Card>
+//                     );
+//                 })}
+//
+//                 {filteredAndSortedActions.length === 0 && (
+//                     <Card>
+//                         <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
+//                             No hay acciones que coincidan con los filtros seleccionados
+//                         </CardContent>
+//                     </Card>
+//                 )}
 //             </div>
 //         </div>
 //     );
@@ -71,55 +521,109 @@ import {
     Filter,
     Users2,
     XCircle,
+    ArrowDownAZ,
+    ArrowUpAZ,
 } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ActionStatus } from "@/types/alertEvents";
+import { ActionStatus, ActionPriority, ActionTask } from "@/types/alertEvents";
+import { Button } from "@/components/ui/button";
 
-// Función auxiliar para obtener el color según el estado
-const getStatusColor = (status: ActionStatus) => {
-    const colors = {
-        'pending': 'bg-yellow-100 text-yellow-800',
-        'in-progress': 'bg-blue-100 text-blue-800',
-        'completed': 'bg-green-100 text-green-800',
-        'cancelled': 'bg-red-100 text-red-800'
-    };
-    return colors[status];
-};
+type SortField = 'deadline' | 'priority' | 'status' | 'createdAt';
+type SortOrder = 'asc' | 'desc';
 
-// Función auxiliar para traducir el estado
-const translateStatus = (status: ActionStatus) => {
-    const translations = {
-        'pending': 'Pendiente',
-        'in-progress': 'En Progreso',
-        'completed': 'Completada',
-        'cancelled': 'Cancelada'
-    };
-    return translations[status];
-};
+interface SortConfig {
+    field: SortField;
+    order: SortOrder;
+}
 
-// Función para obtener el ícono según el estado
-const getStatusIcon = (status: ActionStatus) => {
-    const icons = {
-        'pending': Clock,
-        'in-progress': AlertCircle,
-        'completed': CheckCircle2,
-        'cancelled': XCircle
-    };
-    return icons[status];
-};
+const translateStatus = (status: ActionStatus): string => ({
+    pending: 'Pendiente',
+    'in-progress': 'En Progreso',
+    completed: 'Completada',
+    cancelled: 'Cancelada'
+})[status];
+
+const translatePriority = (priority: ActionPriority): string => ({
+    high: 'Alta',
+    medium: 'Media',
+    low: 'Baja'
+})[priority];
+
+const getStatusColor = (status: ActionStatus): string => ({
+    pending: 'bg-yellow-100 text-yellow-800',
+    'in-progress': 'bg-blue-100 text-blue-800',
+    completed: 'bg-green-100 text-green-800',
+    cancelled: 'bg-red-100 text-red-800'
+})[status];
+
+const getStatusIcon = (status: ActionStatus) => ({
+    pending: Clock,
+    'in-progress': AlertCircle,
+    completed: CheckCircle2,
+    cancelled: XCircle
+})[status];
 
 export default function ActionsPage() {
     const actions = useActionStore(state => state.actions);
     const [statusFilter, setStatusFilter] = useState<ActionStatus | 'all'>('all');
-    const [priorityFilter, setPriorityFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+    const [priorityFilter, setPriorityFilter] = useState<ActionPriority | 'all'>('all');
+    const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'deadline', order: 'asc' });
 
-    // Filtrar acciones
-    const filteredActions = actions.filter(action => {
-        const matchStatus = statusFilter === 'all' || action.status === statusFilter;
-        const matchPriority = priorityFilter === 'all' || action.priority === priorityFilter;
-        return matchStatus && matchPriority;
-    });
+    const sortActions = (a: ActionTask, b: ActionTask) => {
+        const order = sortConfig.order === 'asc' ? 1 : -1;
+
+        switch (sortConfig.field) {
+            case 'deadline':
+                return (new Date(a.deadline).getTime() - new Date(b.deadline).getTime()) * order;
+            case 'priority': {
+                const priorityOrder: Record<ActionPriority, number> = { high: 0, medium: 1, low: 2 };
+                return (priorityOrder[a.priority] - priorityOrder[b.priority]) * order;
+            }
+            case 'status': {
+                const statusOrder: Record<ActionStatus, number> = {
+                    pending: 0,
+                    'in-progress': 1,
+                    completed: 2,
+                    cancelled: 3
+                };
+                return (statusOrder[a.status] - statusOrder[b.status]) * order;
+            }
+            case 'createdAt':
+                return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * order;
+            default:
+                return 0;
+        }
+    };
+
+    const handleSort = (field: SortField) => {
+        setSortConfig(current => ({
+            field,
+            order: current.field === field && current.order === 'asc' ? 'desc' : 'asc'
+        }));
+    };
+
+    const filteredAndSortedActions = actions
+        .filter(action => {
+            const matchStatus = statusFilter === 'all' || action.status === statusFilter;
+            const matchPriority = priorityFilter === 'all' || action.priority === priorityFilter;
+            return matchStatus && matchPriority;
+        })
+        .sort(sortActions);
+
+    const SortButton = ({ field, label }: { field: SortField, label: string }) => (
+        <Button
+            variant="ghost"
+            size="sm"
+            className={`flex items-center gap-2 ${sortConfig.field === field ? 'text-primary' : ''}`}
+            onClick={() => handleSort(field)}
+        >
+            {label}
+            {sortConfig.field === field && (
+                sortConfig.order === 'asc' ? <ArrowUpAZ className="h-4 w-4" /> : <ArrowDownAZ className="h-4 w-4" />
+            )}
+        </Button>
+    );
 
     return (
         <div className="container mx-auto py-6 space-y-6">
@@ -131,10 +635,9 @@ export default function ActionsPage() {
                     </p>
                 </div>
 
-                {/* Estadísticas resumidas */}
                 <div className="flex gap-4">
                     <div className="text-sm">
-                        <span className="text-muted-foreground">Total Acciones:</span>
+                        <span className="text-muted-foreground">Total:</span>
                         <span className="ml-1 font-medium">{actions.length}</span>
                     </div>
                     <div className="text-sm">
@@ -152,12 +655,11 @@ export default function ActionsPage() {
                 </div>
             </div>
 
-            {/* Filtros */}
             <Card>
                 <CardContent className="pt-6">
-                    <div className="flex gap-4 items-center">
-                        <Filter className="w-4 h-4 text-muted-foreground" />
-                        <div className="flex gap-4">
+                    <div className="flex gap-4 items-center justify-between">
+                        <div className="flex gap-4 items-center">
+                            <Filter className="w-4 h-4 text-muted-foreground" />
                             <Select
                                 value={statusFilter}
                                 onValueChange={(value: ActionStatus | 'all') => setStatusFilter(value)}
@@ -167,35 +669,44 @@ export default function ActionsPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todos los estados</SelectItem>
-                                    <SelectItem value="pending">Pendientes</SelectItem>
-                                    <SelectItem value="in-progress">En Progreso</SelectItem>
-                                    <SelectItem value="completed">Completadas</SelectItem>
-                                    <SelectItem value="cancelled">Canceladas</SelectItem>
+                                    {['pending', 'in-progress', 'completed', 'cancelled'].map((status) => (
+                                        <SelectItem key={status} value={status}>
+                                            {translateStatus(status as ActionStatus)}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
 
                             <Select
                                 value={priorityFilter}
-                                onValueChange={(value: 'all' | 'high' | 'medium' | 'low') => setPriorityFilter(value)}
+                                onValueChange={(value: ActionPriority | 'all') => setPriorityFilter(value)}
                             >
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="Filtrar por prioridad" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todas las prioridades</SelectItem>
-                                    <SelectItem value="high">Alta</SelectItem>
-                                    <SelectItem value="medium">Media</SelectItem>
-                                    <SelectItem value="low">Baja</SelectItem>
+                                    {['high', 'medium', 'low'].map((priority) => (
+                                        <SelectItem key={priority} value={priority}>
+                                            {translatePriority(priority as ActionPriority)}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <SortButton field="deadline" label="Fecha límite" />
+                            <SortButton field="priority" label="Prioridad" />
+                            <SortButton field="status" label="Estado" />
+                            <SortButton field="createdAt" label="Fecha de creación" />
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* Lista de Acciones */}
             <div className="grid gap-4">
-                {filteredActions.map(action => {
+                {filteredAndSortedActions.map(action => {
                     const StatusIcon = getStatusIcon(action.status);
                     return (
                         <Card key={action.id} className="hover:bg-accent/5 transition-colors">
@@ -208,8 +719,7 @@ export default function ActionsPage() {
                                                 variant={action.priority === 'high' ? 'destructive' :
                                                     action.priority === 'medium' ? 'secondary' : 'outline'}
                                             >
-                                                {action.priority === 'high' ? 'Alta' :
-                                                    action.priority === 'medium' ? 'Media' : 'Baja'}
+                                                {translatePriority(action.priority)}
                                             </Badge>
                                         </CardTitle>
                                         <CardDescription>{action.description}</CardDescription>
@@ -232,8 +742,12 @@ export default function ActionsPage() {
                                         <Users2 className="w-4 h-4" />
                                         <span>Asignados: {action.assignedTo.length} personas</span>
                                     </div>
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Clock className="w-4 h-4" />
+                                        <span>Creado: {format(new Date(action.createdAt), 'PPP', { locale: es })}</span>
+                                    </div>
                                     {action.notes && action.notes.length > 0 && (
-                                        <div className="col-span-2 text-muted-foreground">
+                                        <div className="md:col-span-2 text-muted-foreground">
                                             Notas: {action.notes[0]}
                                         </div>
                                     )}
@@ -242,7 +756,8 @@ export default function ActionsPage() {
                         </Card>
                     );
                 })}
-                {filteredActions.length === 0 && (
+
+                {filteredAndSortedActions.length === 0 && (
                     <Card>
                         <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
                             No hay acciones que coincidan con los filtros seleccionados
