@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: "PolitIQ",
     description: "Inteligencia política",
     icons: {
-        icon: "https://res.cloudinary.com/dv2xu8dwr/image/upload/v1736021829/analitica-estadisticas_zu9an5.png"
+        icon: "https://res.cloudinary.com/dv2xu8dwr/image/upload/v1736252278/analitica-de-datos-black_osqvyo.png"
     }
 };
 
@@ -34,14 +34,14 @@ export default function RootLayout({
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <div className="flex h-screen">
             <Sidebar />
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col bg-purple-50/50">
                 <Header />
                 <main className="flex-1 p-6 overflow-auto">
                     {children}
                 </main>
             </div>
         </div>
-        <Toaster />
+        <Toaster/>
         </body>
         </html>
     );

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { navigationData } from '@/data/NavigationMockData';
 import { Card } from '@/components/ui/card';
+import Image from 'next/image';
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -13,9 +14,23 @@ export function Sidebar() {
     return (
         <Card className="h-screen w-64 p-4 flex flex-col gap-6 rounded-none border-r">
             {/* Logo */}
-            <div className="flex items-center gap-2 px-2">
+            <Link href="/dashboard" className="flex items-center gap-2 px-2">
+                <Image
+                    src="https://res.cloudinary.com/dv2xu8dwr/image/upload/v1736252278/analitica-de-datos-black_osqvyo.png"
+                    alt="Logo"
+                    width={24}
+                    height={24}
+                    className="block dark:hidden"
+                />
+                <Image
+                    src="https://res.cloudinary.com/dv2xu8dwr/image/upload/v1736252278/analitica-de-datos_ael8fg.png"
+                    alt="Logo"
+                    width={24}
+                    height={24}
+                    className="hidden dark:block"
+                />
                 <span className="font-bold text-2xl">PolitIQ</span>
-            </div>
+            </Link>
 
             {/* Navigation */}
             <nav className="flex-1 flex flex-col gap-6">
@@ -33,8 +48,8 @@ export function Sidebar() {
                                         href={item.href}
                                         className={cn(
                                             "flex items-center gap-3 px-2 py-2 rounded-md text-sm transition-colors",
-                                            "hover:bg-accent hover:text-accent-foreground",
-                                            isActive && "bg-accent text-accent-foreground"
+                                            "hover:bg-purple-50 hover:text-purple-700",
+                                            isActive && "bg-purple-50 text-purple-700"
                                         )}
                                     >
                                         <item.icon className="w-4 h-4" />
