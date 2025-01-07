@@ -119,5 +119,20 @@ export const influencerInteractions: InfluencerInteraction[] = [
         handle: "@NoticiasCaracol",
         avatarUrl: "https://res.cloudinary.com/dv2xu8dwr/image/upload/v1736282579/caracol_kvnrj0.jpg"
 
+    },
+    {
+        id: "9",
+        influencerId: "9",
+        type: "quote",
+        content: "Incautados maletines de dinero destinados al lavado de dólares en campaña política.",
+        timestamp: "2025-02-05T13:30:00",
+        reach: 84000,
+        engagement: 8.2,
+        sentiment: 90,
+        relatedTopics:  ["Elecciones", "Fiscalía", "Corrupción"],
+        authorName: "Fiscalía Colombia",
+        handle: "@FiscaliaCol",
+        avatarUrl: "https://res.cloudinary.com/dv2xu8dwr/image/upload/v1736282579/fiscal%C3%ADa_wes18g.jpg"
+
     }
 ];

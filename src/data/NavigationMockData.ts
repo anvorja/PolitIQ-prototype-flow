@@ -48,7 +48,7 @@ export const navigationData: NavigationSection[] = [
         section: "Análisis",
         items: [
             {
-                title: "Sentimiento",
+                title: "Aprobación",
                 href: "/sentiment",
                 icon: MessageSquare
             },
