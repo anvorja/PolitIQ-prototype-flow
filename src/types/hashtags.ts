@@ -48,3 +48,39 @@ export interface HashtagLink {
     target: string;
     strength: number;
 }
+
+// src/types/hashtags.ts
+
+// ... otras interfaces existentes ...
+
+interface TimeSeriesDataPoint {
+    mentions: number;
+    engagement: number;
+    sentiment: number;
+}
+
+interface CategoryTimeSeries {
+    monthly: TimeSeriesDataPoint[];
+    weekly: TimeSeriesDataPoint[];
+    hourly: TimeSeriesDataPoint[];
+}
+
+interface DatasetsByMetric {
+    mentions: number[];
+    engagement: number[];
+    sentiment: number[];
+}
+
+interface TimeSeriesData {
+    labels: string[];
+    datasets: DatasetsByMetric;
+}
+
+export interface HashtagTrendsData {
+    hourly: TimeSeriesData;
+    weekly: TimeSeriesData;
+    monthly: TimeSeriesData;
+    byCategory: {
+        [key: string]: CategoryTimeSeries;
+    };
+}

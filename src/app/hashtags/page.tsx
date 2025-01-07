@@ -163,7 +163,9 @@ export default function HashtagsPage() {
                     <CardTitle>Tendencias de Hashtags</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <HashtagTrendsChart />
+                    <HashtagTrendsChart
+                        selectedCategory={filteredCategories.length === 1 ? filteredCategories[0] : undefined}
+                    />
                 </CardContent>
             </Card>
 

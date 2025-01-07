@@ -1,6 +1,6 @@
 // src/data/HashtagsMockData.ts
 
-import { HashtagCategory, HashtagNetwork } from '@/types/hashtags';
+import { HashtagCategory, HashtagNetwork, HashtagTrendsData } from '@/types/hashtags';
 
 export const hashtagCategories: HashtagCategory[] = [
     {
@@ -326,7 +326,7 @@ export const hashtagNetwork: HashtagNetwork = {
 };
 
 // Datos adicionales para análisis de tendencias temporales
-export const hashtagTrends = {
+export const hashtagTrends: HashtagTrendsData = {
     hourly: {
         labels: Array.from({length: 24}, (_, i) => `${i}:00`),
         datasets: {
@@ -353,6 +353,158 @@ export const hashtagTrends = {
                 1250000, 1320000, 1280000, 1350000, 1420000],
             engagement: [7.8, 8.0, 8.2, 8.1, 8.3, 8.5, 8.4, 8.6, 8.8, 8.7, 8.9, 9.0],
             sentiment: [64, 65, 66, 65, 67, 68, 67, 69, 70, 69, 71, 72]
+        }
+    },
+    byCategory: {
+        "1": { // Reforma a la Salud
+            monthly: [
+                { mentions: 980000, engagement: 8.9, sentiment: 62 },
+                { mentions: 995000, engagement: 8.8, sentiment: 61 },
+                { mentions: 1020000, engagement: 8.7, sentiment: 63 },
+                { mentions: 1015000, engagement: 8.9, sentiment: 62 },
+                { mentions: 1050000, engagement: 9.0, sentiment: 61 },
+                { mentions: 1080000, engagement: 8.8, sentiment: 60 },
+                { mentions: 1100000, engagement: 8.7, sentiment: 59 },
+                { mentions: 1150000, engagement: 8.9, sentiment: 58 },
+                { mentions: 1180000, engagement: 9.1, sentiment: 57 },
+                { mentions: 1160000, engagement: 9.0, sentiment: 58 },
+                { mentions: 1200000, engagement: 8.9, sentiment: 59 },
+                { mentions: 1250000, engagement: 8.8, sentiment: 58 }
+            ],
+            weekly: [
+                { mentions: 38500, engagement: 8.9, sentiment: 62 },
+                { mentions: 39200, engagement: 8.8, sentiment: 61 },
+                { mentions: 41500, engagement: 8.7, sentiment: 63 },
+                { mentions: 40800, engagement: 8.9, sentiment: 62 },
+                { mentions: 42000, engagement: 9.0, sentiment: 61 },
+                { mentions: 35500, engagement: 8.8, sentiment: 60 },
+                { mentions: 34000, engagement: 8.7, sentiment: 59 }
+            ],
+            hourly: Array.from({ length: 24 }, () => ({
+                mentions: 1000 + Math.floor(Math.random() * 3000),
+                engagement: 7 + Math.random() * 3,
+                sentiment: 55 + Math.floor(Math.random() * 15)
+            }))
+        },
+        "2": { // Paz Total
+            monthly: [
+                { mentions: 850000, engagement: 8.6, sentiment: 68 },
+                { mentions: 875000, engagement: 8.5, sentiment: 67 },
+                { mentions: 920000, engagement: 8.7, sentiment: 69 },
+                { mentions: 890000, engagement: 8.4, sentiment: 68 },
+                { mentions: 650000, engagement: 8.8, sentiment: 70 },
+                { mentions: 780000, engagement: 8.7, sentiment: 69 },
+                { mentions: 960000, engagement: 8.6, sentiment: 68 },
+                { mentions: 1050000, engagement: 8.9, sentiment: 71 },
+                { mentions: 1080000, engagement: 9.0, sentiment: 72 },
+                { mentions: 1020000, engagement: 8.8, sentiment: 70 },
+                { mentions: 1100000, engagement: 8.9, sentiment: 71 },
+                { mentions: 999000, engagement: 9.1, sentiment: 72 }
+            ],
+            weekly: [
+                { mentions: 35200, engagement: 8.6, sentiment: 68 },
+                { mentions: 36800, engagement: 8.7, sentiment: 69 },
+                { mentions: 38500, engagement: 8.8, sentiment: 70 },
+                { mentions: 37900, engagement: 8.7, sentiment: 69 },
+                { mentions: 39200, engagement: 8.9, sentiment: 71 },
+                { mentions: 33500, engagement: 8.5, sentiment: 67 },
+                { mentions: 32000, engagement: 8.4, sentiment: 66 }
+            ],
+            hourly: Array.from({ length: 24 }, () => ({
+                mentions: 1200 + Math.floor(Math.random() * 2800),
+                engagement: 8 + Math.random() * 2,
+                sentiment: 65 + Math.floor(Math.random() * 10)
+            }))
+        },
+        "3": { // Economía y Desarrollo
+            monthly: [
+                { mentions: 850000, engagement: 8.6, sentiment: 68 },
+                { mentions: 875000, engagement: 8.5, sentiment: 67 },
+                { mentions: 920000, engagement: 8.7, sentiment: 69 },
+                { mentions: 890000, engagement: 8.4, sentiment: 68 },
+                { mentions: 950000, engagement: 8.8, sentiment: 70 },
+                { mentions: 980000, engagement: 8.7, sentiment: 69 },
+                { mentions: 960000, engagement: 8.6, sentiment: 68 },
+                { mentions: 990000, engagement: 8.9, sentiment: 89 },
+                { mentions: 1080000, engagement: 9.0, sentiment: 90 },
+                { mentions: 1020000, engagement: 8.8, sentiment: 91 },
+                { mentions: 1100000, engagement: 8.9, sentiment: 92 },
+                { mentions: 1050000, engagement: 9.1, sentiment: 88 }
+            ],
+            weekly: [
+                { mentions: 35200, engagement: 8.6, sentiment: 68 },
+                { mentions: 36800, engagement: 8.7, sentiment: 69 },
+                { mentions: 38500, engagement: 8.8, sentiment: 70 },
+                { mentions: 37900, engagement: 8.7, sentiment: 69 },
+                { mentions: 39200, engagement: 8.9, sentiment: 71 },
+                { mentions: 33500, engagement: 8.5, sentiment: 67 },
+                { mentions: 32000, engagement: 8.4, sentiment: 66 }
+            ],
+            hourly: Array.from({ length: 24 }, () => ({
+                mentions: 1200 + Math.floor(Math.random() * 2800),
+                engagement: 8 + Math.random() * 2,
+                sentiment: 65 + Math.floor(Math.random() * 10)
+            }))
+        },
+        "4": { // Transición Energética
+            monthly: [
+                { mentions: 720000, engagement: 7.8, sentiment: 70 },
+                { mentions: 745000, engagement: 7.9, sentiment: 69 },
+                { mentions: 780000, engagement: 8.0, sentiment: 71 },
+                { mentions: 760000, engagement: 7.9, sentiment: 70 },
+                { mentions: 820000, engagement: 8.2, sentiment: 72 },
+                { mentions: 850000, engagement: 8.3, sentiment: 71 },
+                { mentions: 830000, engagement: 8.1, sentiment: 70 },
+                { mentions: 880000, engagement: 8.4, sentiment: 73 },
+                { mentions: 920000, engagement: 8.5, sentiment: 74 },
+                { mentions: 890000, engagement: 8.3, sentiment: 72 },
+                { mentions: 850000, engagement: 8.6, sentiment: 73 },
+                { mentions: 880000, engagement: 8.7, sentiment: 74 }
+            ],
+            weekly: [
+                { mentions: 29800, engagement: 7.8, sentiment: 70 },
+                { mentions: 31200, engagement: 7.9, sentiment: 71 },
+                { mentions: 32500, engagement: 8.0, sentiment: 72 },
+                { mentions: 31800, engagement: 7.9, sentiment: 71 },
+                { mentions: 33000, engagement: 8.1, sentiment: 73 },
+                { mentions: 28500, engagement: 7.7, sentiment: 69 },
+                { mentions: 27000, engagement: 7.6, sentiment: 68 }
+            ],
+            hourly: Array.from({ length: 24 }, () => ({
+                mentions: 900 + Math.floor(Math.random() * 2500),
+                engagement: 7.5 + Math.random() * 2,
+                sentiment: 68 + Math.floor(Math.random() * 12)
+            }))
+        },
+        "5": { // Educación y Cultura
+            monthly: [
+                { mentions: 620000, engagement: 7.8, sentiment: 70 },
+                { mentions: 645000, engagement: 7.9, sentiment: 69 },
+                { mentions: 680000, engagement: 8.0, sentiment: 71 },
+                { mentions: 560000, engagement: 7.9, sentiment: 70 },
+                { mentions: 420000, engagement: 8.2, sentiment: 72 },
+                { mentions: 450000, engagement: 8.3, sentiment: 71 },
+                { mentions: 430000, engagement: 8.1, sentiment: 70 },
+                { mentions: 120000, engagement: 8.4, sentiment: 50 },
+                { mentions: 250000, engagement: 8.5, sentiment: 74 },
+                { mentions: 790000, engagement: 8.3, sentiment: 72 },
+                { mentions: 750000, engagement: 8.6, sentiment: 73 },
+                { mentions: 880000, engagement: 8.7, sentiment: 84 }
+            ],
+            weekly: [
+                { mentions: 9800, engagement: 7.8, sentiment: 50 },
+                { mentions: 1200, engagement: 7.9, sentiment: 71 },
+                { mentions: 34500, engagement: 8.0, sentiment: 52 },
+                { mentions: 1800, engagement: 7.9, sentiment: 71 },
+                { mentions: 10000, engagement: 8.1, sentiment: 73 },
+                { mentions: 2500, engagement: 7.7, sentiment: 69 },
+                { mentions: 27000, engagement: 7.6, sentiment: 68 }
+            ],
+            hourly: Array.from({ length: 24 }, () => ({
+                mentions: 900 + Math.floor(Math.random() * 2500),
+                engagement: 7.5 + Math.random() * 2,
+                sentiment: 68 + Math.floor(Math.random() * 12)
+            }))
         }
     }
 };
