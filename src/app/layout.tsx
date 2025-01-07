@@ -143,7 +143,7 @@ export default function RootLayout({
             <ThemeFavicon />
             <div className="flex h-screen">
                 <Sidebar />
-                <div className="flex-1 flex flex-col bg-purple-50/50">
+                <div className="flex-1 flex flex-col bg-purple-50/50 dark:bg-neutral-900/95">
                     <Header />
                     <main className="flex-1 p-6 overflow-auto">
                         {children}
@@ -156,3 +156,9 @@ export default function RootLayout({
         </html>
     );
 }
+
+// sugerencias modo oscuro
+// dark:bg-neutral-900/95
+// dark:bg-gray-900/90
+// dark:bg-slate-900/95
+// dark:bg-zinc-900/95
