@@ -1,5 +1,4 @@
 // src/components/reports/ReportDetailModal.tsx
-
 "use client"
 
 import React, { useRef } from 'react';
@@ -46,13 +45,44 @@ const formatIcon = (format: string) => {
 };
 
 export function ReportDetailModal({ report, isOpen, onCloseAction }: ReportDetailModalProps) {
-    const { toast } = useToast();
+    const {toast} = useToast();
     const [showPreview, setShowPreview] = React.useState(false);
     const previewRef = useRef<ReportPreviewRef>(null);
 
     if (!report) return null;
 
     const IconComponent = formatIcon(report.config.format);
+
+    // Función para manejar la previsualización y generación del PDF
+    const handlePDFGeneration = async () => {
+        try {
+            // Mostrar la previsualización temporalmente
+            setShowPreview(true);
+
+            // Esperar a que el componente se monte
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            if (previewRef.current) {
+                await previewRef.current.generatePDF();
+                toast({
+                    title: "PDF generado",
+                    description: "Tu reporte ha sido generado exitosamente",
+                });
+                // Volver a la vista de detalles
+                setShowPreview(false);
+            } else {
+                throw new Error('No se pudo inicializar la generación del PDF');
+            }
+        } catch (error) {
+            console.error('Error generando PDF:', error);
+            toast({
+                title: "Error en la generación",
+                description: "No se pudo generar el PDF. Por favor, intenta nuevamente.",
+                variant: "destructive"
+            });
+            setShowPreview(false);
+        }
+    };
 
     const handleShare = async () => {
         const shareData = {
@@ -89,9 +119,7 @@ export function ReportDetailModal({ report, isOpen, onCloseAction }: ReportDetai
 
             switch (report.config.format) {
                 case 'pdf':
-                    if (previewRef.current) {
-                        await previewRef.current.generatePDF();
-                    }
+                    await handlePDFGeneration();
                     break;
 
                 case 'excel':
@@ -113,8 +141,8 @@ export function ReportDetailModal({ report, isOpen, onCloseAction }: ReportDetai
                             ['Título', report.config.title],
                             ['Descripción', report.config.description || ''],
                             ['Generado por', report.generatedBy],
-                            ['Fecha de generación', format(new Date(report.createdAt), 'PPP', { locale: es })],
-                            ['Período', `${format(new Date(report.config.dateRange.start), 'PP', { locale: es })} - ${format(new Date(report.config.dateRange.end), 'PP', { locale: es })}`],
+                            ['Fecha de generación', format(new Date(report.createdAt), 'PPP', {locale: es})],
+                            ['Período', `${format(new Date(report.config.dateRange.start), 'PP', {locale: es})} - ${format(new Date(report.config.dateRange.end), 'PP', {locale: es})}`],
                             [''], // Línea en blanco
                             ['Secciones incluidas:']
                         ];
@@ -124,11 +152,11 @@ export function ReportDetailModal({ report, isOpen, onCloseAction }: ReportDetai
                             const rowData = infoSheet.addRow(row);
                             if (index === 0 || index === 6) { // Aplicar estilo a títulos
                                 rowData.eachCell(cell => {
-                                    cell.font = { bold: true, size: 12 };
+                                    cell.font = {bold: true, size: 12};
                                     cell.fill = {
                                         type: 'pattern',
                                         pattern: 'solid',
-                                        fgColor: { argb: 'FFE6E6E6' }
+                                        fgColor: {argb: 'FFE6E6E6'}
                                     };
                                 });
                             }
@@ -149,11 +177,11 @@ export function ReportDetailModal({ report, isOpen, onCloseAction }: ReportDetai
 
                             // Añadir título con estilo
                             const titleRow = sectionSheet.addRow([section]);
-                            titleRow.font = { bold: true, size: 14 };
+                            titleRow.font = {bold: true, size: 14};
                             titleRow.fill = {
                                 type: 'pattern',
                                 pattern: 'solid',
-                                fgColor: { argb: 'FFE6E6E6' }
+                                fgColor: {argb: 'FFE6E6E6'}
                             };
 
                             sectionSheet.addRow(['']); // Línea en blanco
@@ -194,15 +222,15 @@ export function ReportDetailModal({ report, isOpen, onCloseAction }: ReportDetai
                         ['Reporte:', report.config.title],
                         ['Descripción:', report.config.description || ''],
                         ['Generado por:', report.generatedBy],
-                        ['Fecha de generación:', format(new Date(report.createdAt), 'PPP', { locale: es })],
-                        ['Período:', `${format(new Date(report.config.dateRange.start), 'PP', { locale: es })} - ${format(new Date(report.config.dateRange.end), 'PP', { locale: es })}`],
+                        ['Fecha de generación:', format(new Date(report.createdAt), 'PPP', {locale: es})],
+                        ['Período:', `${format(new Date(report.config.dateRange.start), 'PP', {locale: es})} - ${format(new Date(report.config.dateRange.end), 'PP', {locale: es})}`],
                         [''], // Línea en blanco
                         ['Secciones:'],
                         ...report.config.sections.map(section => [section])
                     ];
 
                     const csvContent = csvRows.map(row => row.join(',')).join('\n');
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
                     const url = URL.createObjectURL(blob);
 
                     const link = document.createElement('a');
@@ -223,12 +251,11 @@ export function ReportDetailModal({ report, isOpen, onCloseAction }: ReportDetai
             console.error('Error al generar el archivo:', error);
             toast({
                 title: "Error en la generación",
-                description: "No se pudo generar el reporte",
+                description: error instanceof Error ? error.message : "No se pudo generar el reporte",
                 variant: "destructive"
             });
         }
     };
-
     return (
         <Dialog open={isOpen} onOpenChange={onCloseAction}>
             <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
@@ -240,9 +267,13 @@ export function ReportDetailModal({ report, isOpen, onCloseAction }: ReportDetai
                 </DialogHeader>
 
                 <div className="space-y-6">
-                    {showPreview ? (
+                    {/* Mantener ReportPreview siempre montado pero oculto */}
+                    <div className={showPreview ? "block" : "hidden"}>
                         <ReportPreview ref={previewRef} report={report} />
-                    ) : (
+                    </div>
+
+                    {/* Contenido principal */}
+                    {!showPreview && (
                         <>
                             {/* Descripción */}
                             {report.config.description && (
@@ -353,7 +384,6 @@ export function ReportDetailModal({ report, isOpen, onCloseAction }: ReportDetai
                             Cerrar
                         </Button>
                     </div>
-
                 </div>
             </DialogContent>
         </Dialog>
