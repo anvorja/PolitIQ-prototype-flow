@@ -1,4 +1,4 @@
-// // src/app/actions/page.tsx
+// src/app/actions/page.tsx
 
 "use client"
 
@@ -8,9 +8,6 @@ import { useActionStore } from "@/store/actionsTakenStore";
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
 } from "@/components/ui/card";
 import {
     Select,
@@ -29,15 +26,19 @@ import {
     XCircle,
     ArrowDownAZ,
     ArrowUpAZ,
+    LayoutGrid,
+    LayoutList, Database, Cloud,
 } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ActionStatus, ActionPriority, ActionTask } from "@/types/alertEvents";
 import { Button } from "@/components/ui/button";
-import {ActionDetailModal} from "@/components/actions/ActionDetailModal";
+import { ActionDetailModal } from "@/components/actions/ActionDetailModal";
+import { GroupedActionsView } from "@/components/actions/GroupedActionsView";
 
 type SortField = 'deadline' | 'priority' | 'status' | 'createdAt';
 type SortOrder = 'asc' | 'desc';
+type ViewMode = 'list' | 'grouped';
 
 interface SortConfig {
     field: SortField;
@@ -72,11 +73,30 @@ const getStatusIcon = (status: ActionStatus) => ({
 })[status];
 
 export default function ActionsPage() {
-    const actions = useActionStore(state => state.actions);
+
+    const {
+        getCurrentActions,
+        getCurrentAlerts,
+        useMockData,
+        toggleDataSource,
+        initializeStore
+    } = useActionStore();
+
+    // Estado local
     const [statusFilter, setStatusFilter] = useState<ActionStatus | 'all'>('all');
     const [priorityFilter, setPriorityFilter] = useState<ActionPriority | 'all'>('all');
     const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'deadline', order: 'asc' });
     const [selectedAction, setSelectedAction] = useState<ActionTask | null>(null);
+    const [viewMode, setViewMode] = useState<ViewMode>('list');
+
+    // Obtener datos actuales
+    const actions = getCurrentActions();
+    const alerts = getCurrentAlerts();
+
+    // Inicializar store
+    React.useEffect(() => {
+        initializeStore();
+    }, [initializeStore]);
 
     const sortActions = (a: ActionTask, b: ActionTask) => {
         const order = sortConfig.order === 'asc' ? 1 : -1;
@@ -143,7 +163,25 @@ export default function ActionsPage() {
                     </p>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex gap-4 items-center">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={toggleDataSource}
+                        className="flex items-center gap-2"
+                    >
+                        {useMockData ? (
+                            <>
+                                <Database className="w-4 h-4" />
+                                Usando datos de prueba
+                            </>
+                        ) : (
+                            <>
+                                <Cloud className="w-4 h-4" />
+                                Usando datos reales
+                            </>
+                        )}
+                    </Button>
                     <div className="text-sm">
                         <span className="text-muted-foreground">Total:</span>
                         <span className="ml-1 font-medium">{actions.length}</span>
@@ -151,14 +189,14 @@ export default function ActionsPage() {
                     <div className="text-sm">
                         <span className="text-muted-foreground">Pendientes:</span>
                         <span className="ml-1 font-medium">
-                            {actions.filter(a => a.status === 'pending').length}
-                        </span>
+                        {actions.filter(a => a.status === 'pending').length}
+                    </span>
                     </div>
                     <div className="text-sm">
                         <span className="text-muted-foreground">Completadas:</span>
                         <span className="ml-1 font-medium">
-                            {actions.filter(a => a.status === 'completed').length}
-                        </span>
+                        {actions.filter(a => a.status === 'completed').length}
+                    </span>
                     </div>
                 </div>
             </div>
@@ -204,79 +242,112 @@ export default function ActionsPage() {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <SortButton field="deadline" label="Fecha límite" />
-                            <SortButton field="priority" label="Prioridad" />
-                            <SortButton field="status" label="Estado" />
-                            <SortButton field="createdAt" label="Fecha de creación" />
+                            <div className="flex items-center gap-2 border rounded-md p-1">
+                                <Button
+                                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setViewMode('list')}
+                                    className="gap-2"
+                                >
+                                    <LayoutList className="h-4 w-4" />
+                                    Lista
+                                </Button>
+                                <Button
+                                    variant={viewMode === 'grouped' ? 'secondary' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setViewMode('grouped')}
+                                    className="gap-2"
+                                >
+                                    <LayoutGrid className="h-4 w-4" />
+                                    Agrupada
+                                </Button>
+                            </div>
+                            <div className="h-6 w-px bg-border" />
+                            <div className="flex items-center gap-4">
+                                <SortButton field="deadline" label="Fecha límite" />
+                                <SortButton field="priority" label="Prioridad" />
+                                <SortButton field="status" label="Estado" />
+                                <SortButton field="createdAt" label="Fecha de creación" />
+                            </div>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            <div className="grid gap-4">
-                {filteredAndSortedActions.map(action => {
-                    const StatusIcon = getStatusIcon(action.status);
-                    return (
-                        <Card
-                            key={action.id}
-                            className="hover:bg-accent/5 transition-colors cursor-pointer"
-                            onClick={() => setSelectedAction(action)}
-                        >
-                            <CardHeader className="pb-2">
-                                <div className="flex justify-between items-start">
-                                    <div className="space-y-1">
-                                        <CardTitle className="flex items-center gap-2">
-                                            {action.title}
+            {viewMode === 'grouped' ? (
+                <GroupedActionsView
+                    actions={filteredAndSortedActions}
+                    alerts={alerts}
+                    onActionClick={setSelectedAction}
+                />
+            ) : (
+                <div className="grid gap-4">
+                    {filteredAndSortedActions.map(action => {
+                        const StatusIcon = getStatusIcon(action.status);
+                        return (
+                            <Card
+                                key={action.id}
+                                className="hover:bg-accent/5 transition-colors cursor-pointer"
+                                onClick={() => setSelectedAction(action)}
+                            >
+                                <CardContent className="pt-6">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1">
+                                                <h3 className="text-lg font-semibold flex items-center gap-2">
+                                                    {action.title}
+                                                    <Badge
+                                                        variant={action.priority === 'high' ? 'destructive' :
+                                                            action.priority === 'medium' ? 'secondary' : 'outline'}
+                                                    >
+                                                        {translatePriority(action.priority)}
+                                                    </Badge>
+                                                </h3>
+                                                <p className="text-sm text-muted-foreground">{action.description}</p>
+                                            </div>
                                             <Badge
-                                                variant={action.priority === 'high' ? 'destructive' :
-                                                    action.priority === 'medium' ? 'secondary' : 'outline'}
+                                                className={`flex items-center gap-1 ${getStatusColor(action.status)}`}
                                             >
-                                                {translatePriority(action.priority)}
+                                                <StatusIcon className="w-4 h-4" />
+                                                {translateStatus(action.status)}
                                             </Badge>
-                                        </CardTitle>
-                                        <CardDescription>{action.description}</CardDescription>
-                                    </div>
-                                    <Badge
-                                        className={`flex items-center gap-1 ${getStatusColor(action.status)}`}
-                                    >
-                                        <StatusIcon className="w-4 h-4" />
-                                        {translateStatus(action.status)}
-                                    </Badge>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Calendar className="w-4 h-4" />
-                                        <span>Límite: {format(new Date(action.deadline), 'PPP', { locale: es })}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Users2 className="w-4 h-4" />
-                                        <span>Asignados: {action.assignedTo.length} personas</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Clock className="w-4 h-4" />
-                                        <span>Creado: {format(new Date(action.createdAt), 'PPP', { locale: es })}</span>
-                                    </div>
-                                    {action.notes && action.notes.length > 0 && (
-                                        <div className="md:col-span-2 text-muted-foreground">
-                                            Notas: {action.notes[0]}
                                         </div>
-                                    )}
-                                </div>
+
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Calendar className="w-4 h-4" />
+                                                <span>Límite: {format(new Date(action.deadline), 'PPP', { locale: es })}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Users2 className="w-4 h-4" />
+                                                <span>Asignados: {action.assignedTo.length} personas</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Clock className="w-4 h-4" />
+                                                <span>Creado: {format(new Date(action.createdAt), 'PPP', { locale: es })}</span>
+                                            </div>
+                                            {action.notes && action.notes.length > 0 && (
+                                                <div className="md:col-span-2 text-muted-foreground">
+                                                    Notas: {action.notes[0]}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+
+                    {filteredAndSortedActions.length === 0 && (
+                        <Card>
+                            <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
+                                No hay acciones que coincidan con los filtros seleccionados
                             </CardContent>
                         </Card>
-                    );
-                })}
+                    )}
+                </div>
+            )}
 
-                {filteredAndSortedActions.length === 0 && (
-                    <Card>
-                        <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
-                            No hay acciones que coincidan con los filtros seleccionados
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
             {selectedAction && (
                 <ActionDetailModal
                     action={selectedAction}

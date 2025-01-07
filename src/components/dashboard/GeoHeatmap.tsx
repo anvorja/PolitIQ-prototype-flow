@@ -1,3 +1,4 @@
+// src/components/dashboard/GeoHeatmap.tsx
 "use client"
 
 import React, { useState, useRef } from 'react';
