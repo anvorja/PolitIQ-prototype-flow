@@ -1,4 +1,4 @@
-// data/TeamMockData.ts
+// src/data/TeamMockData.ts
 
 export interface TeamMember {
     id: string;
