@@ -2,12 +2,15 @@
   "name": "politiq",
   "version": "0.1.0",
   "private": true,
+
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "echo '🔍 HOLA, ANTES DE COMPILAR VERIFIQUEMOS SINTAXIS' && pnpm run lint && echo '🏗️ VERIFICA QUE CONSTRUYA BIEN' && pnpm run build && pnpm run clean && next dev",
+    "build": "tsc -b && next build && echo '🎉 NO HUBO ERRORES 🎉'",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint && echo '👩🏽‍💻 SINTAXIS OKAY 🧑‍💻'",
+    "clean": "rm -rf .next *.tsbuildinfo && echo '\uD83E\uDDF9 ARCHIVOS LIMPIOS \uD83E\uDDF9'"
   },
+
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-avatar": "^1.1.2",
