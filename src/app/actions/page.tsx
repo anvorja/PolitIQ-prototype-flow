@@ -1,49 +1,5 @@
 // src/app/actions/page.tsx
 
-// "use client"
-//
-// import { format } from 'date-fns';
-// import { es } from 'date-fns/locale';
-// import {useActionStore} from "@/store/actionsTakenStore";
-//
-// export default function ActionsPage() {
-//     const actions = useActionStore(state => state.actions);
-//
-//     return (
-//         <div className="container mx-auto py-6">
-//             <h1 className="text-2xl font-bold mb-6">Seguimiento de Acciones</h1>
-//
-//             <div className="grid gap-4">
-//                 {actions.map(action => (
-//                     <div
-//                         key={action.id}
-//                         className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow"
-//                     >
-//                         <div className="flex justify-between items-start mb-2">
-//                             <h3 className="text-lg font-semibold">{action.title}</h3>
-//                             <span className={`px-2 py-1 rounded text-sm ${
-//                                 action.priority === 'high' ? 'bg-red-100 text-red-800' :
-//                                     action.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-//                                         'bg-green-100 text-green-800'
-//                             }`}>
-//                                 {action.priority === 'high' ? 'Alta' :
-//                                     action.priority === 'medium' ? 'Media' : 'Baja'}
-//                             </span>
-//                         </div>
-//
-//                         <p className="text-gray-600 mb-2">{action.description}</p>
-//
-//                         <div className="grid grid-cols-2 gap-2 text-sm text-gray-500">
-//                             <div>Fecha límite: {format(new Date(action.deadline), 'PPP', { locale: es })}</div>
-//                             <div>Estado: {action.status}</div>
-//                         </div>
-//                     </div>
-//                 ))}
-//             </div>
-//         </div>
-//     );
-// }
-
 "use client"
 
 import { format } from 'date-fns';
@@ -52,9 +8,6 @@ import { useActionStore } from "@/store/actionsTakenStore";
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
 } from "@/components/ui/card";
 import {
     Select,
@@ -71,55 +24,134 @@ import {
     Filter,
     Users2,
     XCircle,
+    ArrowDownAZ,
+    ArrowUpAZ,
+    LayoutGrid,
+    LayoutList, Database, Cloud,
 } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ActionStatus } from "@/types/alertEvents";
+import { ActionStatus, ActionPriority, ActionTask } from "@/types/alertEvents";
+import { Button } from "@/components/ui/button";
+import { ActionDetailModal } from "@/components/actions/ActionDetailModal";
+import { GroupedActionsView } from "@/components/actions/GroupedActionsView";
 
-// Función auxiliar para obtener el color según el estado
-const getStatusColor = (status: ActionStatus) => {
-    const colors = {
-        'pending': 'bg-yellow-100 text-yellow-800',
-        'in-progress': 'bg-blue-100 text-blue-800',
-        'completed': 'bg-green-100 text-green-800',
-        'cancelled': 'bg-red-100 text-red-800'
-    };
-    return colors[status];
-};
+type SortField = 'deadline' | 'priority' | 'status' | 'createdAt';
+type SortOrder = 'asc' | 'desc';
+type ViewMode = 'list' | 'grouped';
 
-// Función auxiliar para traducir el estado
-const translateStatus = (status: ActionStatus) => {
-    const translations = {
-        'pending': 'Pendiente',
-        'in-progress': 'En Progreso',
-        'completed': 'Completada',
-        'cancelled': 'Cancelada'
-    };
-    return translations[status];
-};
+interface SortConfig {
+    field: SortField;
+    order: SortOrder;
+}
 
-// Función para obtener el ícono según el estado
-const getStatusIcon = (status: ActionStatus) => {
-    const icons = {
-        'pending': Clock,
-        'in-progress': AlertCircle,
-        'completed': CheckCircle2,
-        'cancelled': XCircle
-    };
-    return icons[status];
-};
+const translateStatus = (status: ActionStatus): string => ({
+    pending: 'Pendiente',
+    'in-progress': 'En Progreso',
+    completed: 'Completada',
+    cancelled: 'Cancelada'
+})[status];
+
+const translatePriority = (priority: ActionPriority): string => ({
+    high: 'Alta',
+    medium: 'Media',
+    low: 'Baja'
+})[priority];
+
+const getStatusColor = (status: ActionStatus): string => ({
+    pending: 'bg-yellow-100 text-yellow-800',
+    'in-progress': 'bg-blue-100 text-blue-800',
+    completed: 'bg-green-100 text-green-800',
+    cancelled: 'bg-red-100 text-red-800'
+})[status];
+
+const getStatusIcon = (status: ActionStatus) => ({
+    pending: Clock,
+    'in-progress': AlertCircle,
+    completed: CheckCircle2,
+    cancelled: XCircle
+})[status];
 
 export default function ActionsPage() {
-    const actions = useActionStore(state => state.actions);
-    const [statusFilter, setStatusFilter] = useState<ActionStatus | 'all'>('all');
-    const [priorityFilter, setPriorityFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
 
-    // Filtrar acciones
-    const filteredActions = actions.filter(action => {
-        const matchStatus = statusFilter === 'all' || action.status === statusFilter;
-        const matchPriority = priorityFilter === 'all' || action.priority === priorityFilter;
-        return matchStatus && matchPriority;
-    });
+    const {
+        getCurrentActions,
+        getCurrentAlerts,
+        useMockData,
+        toggleDataSource,
+        initializeStore
+    } = useActionStore();
+
+    // Estado local
+    const [statusFilter, setStatusFilter] = useState<ActionStatus | 'all'>('all');
+    const [priorityFilter, setPriorityFilter] = useState<ActionPriority | 'all'>('all');
+    const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'deadline', order: 'asc' });
+    const [selectedAction, setSelectedAction] = useState<ActionTask | null>(null);
+    const [viewMode, setViewMode] = useState<ViewMode>('list');
+
+    // Obtener datos actuales
+    const actions = getCurrentActions();
+    const alerts = getCurrentAlerts();
+
+    // Inicializar store
+    React.useEffect(() => {
+        initializeStore();
+    }, [initializeStore]);
+
+    const sortActions = (a: ActionTask, b: ActionTask) => {
+        const order = sortConfig.order === 'asc' ? 1 : -1;
+
+        switch (sortConfig.field) {
+            case 'deadline':
+                return (new Date(a.deadline).getTime() - new Date(b.deadline).getTime()) * order;
+            case 'priority': {
+                const priorityOrder: Record<ActionPriority, number> = { high: 0, medium: 1, low: 2 };
+                return (priorityOrder[a.priority] - priorityOrder[b.priority]) * order;
+            }
+            case 'status': {
+                const statusOrder: Record<ActionStatus, number> = {
+                    pending: 0,
+                    'in-progress': 1,
+                    completed: 2,
+                    cancelled: 3
+                };
+                return (statusOrder[a.status] - statusOrder[b.status]) * order;
+            }
+            case 'createdAt':
+                return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * order;
+            default:
+                return 0;
+        }
+    };
+
+    const handleSort = (field: SortField) => {
+        setSortConfig(current => ({
+            field,
+            order: current.field === field && current.order === 'asc' ? 'desc' : 'asc'
+        }));
+    };
+
+    const filteredAndSortedActions = actions
+        .filter(action => {
+            const matchStatus = statusFilter === 'all' || action.status === statusFilter;
+            const matchPriority = priorityFilter === 'all' || action.priority === priorityFilter;
+            return matchStatus && matchPriority;
+        })
+        .sort(sortActions);
+
+    const SortButton = ({ field, label }: { field: SortField, label: string }) => (
+        <Button
+            variant="ghost"
+            size="sm"
+            className={`flex items-center gap-2 ${sortConfig.field === field ? 'text-primary' : ''}`}
+            onClick={() => handleSort(field)}
+        >
+            {label}
+            {sortConfig.field === field && (
+                sortConfig.order === 'asc' ? <ArrowUpAZ className="h-4 w-4" /> : <ArrowDownAZ className="h-4 w-4" />
+            )}
+        </Button>
+    );
 
     return (
         <div className="container mx-auto py-6 space-y-6">
@@ -131,33 +163,49 @@ export default function ActionsPage() {
                     </p>
                 </div>
 
-                {/* Estadísticas resumidas */}
-                <div className="flex gap-4">
+                <div className="flex gap-4 items-center">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={toggleDataSource}
+                        className="flex items-center gap-2"
+                    >
+                        {useMockData ? (
+                            <>
+                                <Database className="w-4 h-4" />
+                                Usando datos de prueba
+                            </>
+                        ) : (
+                            <>
+                                <Cloud className="w-4 h-4" />
+                                Usando datos reales
+                            </>
+                        )}
+                    </Button>
                     <div className="text-sm">
-                        <span className="text-muted-foreground">Total Acciones:</span>
+                        <span className="text-muted-foreground">Total:</span>
                         <span className="ml-1 font-medium">{actions.length}</span>
                     </div>
                     <div className="text-sm">
                         <span className="text-muted-foreground">Pendientes:</span>
                         <span className="ml-1 font-medium">
-                            {actions.filter(a => a.status === 'pending').length}
-                        </span>
+                        {actions.filter(a => a.status === 'pending').length}
+                    </span>
                     </div>
                     <div className="text-sm">
                         <span className="text-muted-foreground">Completadas:</span>
                         <span className="ml-1 font-medium">
-                            {actions.filter(a => a.status === 'completed').length}
-                        </span>
+                        {actions.filter(a => a.status === 'completed').length}
+                    </span>
                     </div>
                 </div>
             </div>
 
-            {/* Filtros */}
             <Card>
                 <CardContent className="pt-6">
-                    <div className="flex gap-4 items-center">
-                        <Filter className="w-4 h-4 text-muted-foreground" />
-                        <div className="flex gap-4">
+                    <div className="flex gap-4 items-center justify-between">
+                        <div className="flex gap-4 items-center">
+                            <Filter className="w-4 h-4 text-muted-foreground" />
                             <Select
                                 value={statusFilter}
                                 onValueChange={(value: ActionStatus | 'all') => setStatusFilter(value)}
@@ -167,89 +215,146 @@ export default function ActionsPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todos los estados</SelectItem>
-                                    <SelectItem value="pending">Pendientes</SelectItem>
-                                    <SelectItem value="in-progress">En Progreso</SelectItem>
-                                    <SelectItem value="completed">Completadas</SelectItem>
-                                    <SelectItem value="cancelled">Canceladas</SelectItem>
+                                    {['pending', 'in-progress', 'completed', 'cancelled'].map((status) => (
+                                        <SelectItem key={status} value={status}>
+                                            {translateStatus(status as ActionStatus)}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
 
                             <Select
                                 value={priorityFilter}
-                                onValueChange={(value: 'all' | 'high' | 'medium' | 'low') => setPriorityFilter(value)}
+                                onValueChange={(value: ActionPriority | 'all') => setPriorityFilter(value)}
                             >
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="Filtrar por prioridad" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todas las prioridades</SelectItem>
-                                    <SelectItem value="high">Alta</SelectItem>
-                                    <SelectItem value="medium">Media</SelectItem>
-                                    <SelectItem value="low">Baja</SelectItem>
+                                    {['high', 'medium', 'low'].map((priority) => (
+                                        <SelectItem key={priority} value={priority}>
+                                            {translatePriority(priority as ActionPriority)}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 border rounded-md p-1">
+                                <Button
+                                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setViewMode('list')}
+                                    className="gap-2"
+                                >
+                                    <LayoutList className="h-4 w-4" />
+                                    Lista
+                                </Button>
+                                <Button
+                                    variant={viewMode === 'grouped' ? 'secondary' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setViewMode('grouped')}
+                                    className="gap-2"
+                                >
+                                    <LayoutGrid className="h-4 w-4" />
+                                    Agrupada
+                                </Button>
+                            </div>
+                            <div className="h-6 w-px bg-border" />
+                            <div className="flex items-center gap-4">
+                                <SortButton field="deadline" label="Fecha límite" />
+                                <SortButton field="priority" label="Prioridad" />
+                                <SortButton field="status" label="Estado" />
+                                <SortButton field="createdAt" label="Fecha de creación" />
+                            </div>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* Lista de Acciones */}
-            <div className="grid gap-4">
-                {filteredActions.map(action => {
-                    const StatusIcon = getStatusIcon(action.status);
-                    return (
-                        <Card key={action.id} className="hover:bg-accent/5 transition-colors">
-                            <CardHeader className="pb-2">
-                                <div className="flex justify-between items-start">
-                                    <div className="space-y-1">
-                                        <CardTitle className="flex items-center gap-2">
-                                            {action.title}
+            {viewMode === 'grouped' ? (
+                <GroupedActionsView
+                    actions={filteredAndSortedActions}
+                    alerts={alerts}
+                    onActionClick={setSelectedAction}
+                />
+            ) : (
+                <div className="grid gap-4">
+                    {filteredAndSortedActions.map(action => {
+                        const StatusIcon = getStatusIcon(action.status);
+                        return (
+                            <Card
+                                key={action.id}
+                                className="hover:bg-accent/5 transition-colors cursor-pointer"
+                                onClick={() => setSelectedAction(action)}
+                            >
+                                <CardContent className="pt-6">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1">
+                                                <h3 className="text-lg font-semibold flex items-center gap-2">
+                                                    {action.title}
+                                                    <Badge
+                                                        variant={action.priority === 'high' ? 'destructive' :
+                                                            action.priority === 'medium' ? 'secondary' : 'outline'}
+                                                    >
+                                                        {translatePriority(action.priority)}
+                                                    </Badge>
+                                                </h3>
+                                                <p className="text-sm text-muted-foreground">{action.description}</p>
+                                            </div>
                                             <Badge
-                                                variant={action.priority === 'high' ? 'destructive' :
-                                                    action.priority === 'medium' ? 'secondary' : 'outline'}
+                                                className={`flex items-center gap-1 ${getStatusColor(action.status)}`}
                                             >
-                                                {action.priority === 'high' ? 'Alta' :
-                                                    action.priority === 'medium' ? 'Media' : 'Baja'}
+                                                <StatusIcon className="w-4 h-4" />
+                                                {translateStatus(action.status)}
                                             </Badge>
-                                        </CardTitle>
-                                        <CardDescription>{action.description}</CardDescription>
-                                    </div>
-                                    <Badge
-                                        className={`flex items-center gap-1 ${getStatusColor(action.status)}`}
-                                    >
-                                        <StatusIcon className="w-4 h-4" />
-                                        {translateStatus(action.status)}
-                                    </Badge>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Calendar className="w-4 h-4" />
-                                        <span>Límite: {format(new Date(action.deadline), 'PPP', { locale: es })}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Users2 className="w-4 h-4" />
-                                        <span>Asignados: {action.assignedTo.length} personas</span>
-                                    </div>
-                                    {action.notes && action.notes.length > 0 && (
-                                        <div className="col-span-2 text-muted-foreground">
-                                            Notas: {action.notes[0]}
                                         </div>
-                                    )}
-                                </div>
+
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Calendar className="w-4 h-4" />
+                                                <span>Límite: {format(new Date(action.deadline), 'PPP', { locale: es })}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Users2 className="w-4 h-4" />
+                                                <span>Asignados: {action.assignedTo.length} personas</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Clock className="w-4 h-4" />
+                                                <span>Creado: {format(new Date(action.createdAt), 'PPP', { locale: es })}</span>
+                                            </div>
+                                            {action.notes && action.notes.length > 0 && (
+                                                <div className="md:col-span-2 text-muted-foreground">
+                                                    Notas: {action.notes[0]}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+
+                    {filteredAndSortedActions.length === 0 && (
+                        <Card>
+                            <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
+                                No hay acciones que coincidan con los filtros seleccionados
                             </CardContent>
                         </Card>
-                    );
-                })}
-                {filteredActions.length === 0 && (
-                    <Card>
-                        <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
-                            No hay acciones que coincidan con los filtros seleccionados
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
+                    )}
+                </div>
+            )}
+
+            {selectedAction && (
+                <ActionDetailModal
+                    action={selectedAction}
+                    isOpen={!!selectedAction}
+                    onCloseAction={() => setSelectedAction(null)}
+                />
+            )}
         </div>
     );
 }

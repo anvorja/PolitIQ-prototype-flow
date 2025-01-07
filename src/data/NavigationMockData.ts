@@ -8,7 +8,7 @@ import {
     MapPin,
     MessageSquare,
     Hash,
-    ClipboardList
+    ListTodo
 } from 'lucide-react';
 import {NavigationSection} from "@/types/navigation";
 
@@ -35,7 +35,7 @@ export const navigationData: NavigationSection[] = [
             {
                 title: "Acciones",
                 href: "/actions",
-                icon: ClipboardList
+                icon: ListTodo
             },
             {
                 title: "Reportes",
