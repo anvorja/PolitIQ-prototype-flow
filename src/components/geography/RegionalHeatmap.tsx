@@ -1,6 +1,6 @@
 // src/components/geography/RegionalHeatmap.tsx
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     ComposableMap,
@@ -8,183 +8,234 @@ import {
     Geography
 } from "react-simple-maps";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-    departmentIntensityData,
-    regionalAnalytics
-} from '@/data/GeographyMockData';
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { normalizeText } from '@/lib/textUtils';
+import { getDepartmentsInRegion,
+    getIntensityColor,
+    calculateRegionIntensity
+} from '@/lib/geoDepartmentsUtils';
+import { departmentIntensityData, regionalAnalytics } from '@/data/GeographyMockData';
+import {
+    DEPARTMENT_TO_REGION,
+    COLOMBIA_REGIONS,
+    RegionName
+} from '@/data/ColombiaRegionMapping';
+import { DepartmentGeography } from "@/types/geo";
 
-const METRICS = {
-    influence: {
-        title: "Influencia",
-        colors: {
-            high: "#22c55e",    // Verde para alta influencia
-            medium: "#eab308",   // Amarillo para media influencia
-            low: "#ef4444",      // Rojo para baja influencia
-            default: "#e5e5e5"   // Gris para sin datos
-        }
-    },
-    awareness: {
-        title: "Reconocimiento",
-        colors: {
-            high: "#3b82f6",    // Azul para alto reconocimiento
-            medium: "#8b5cf6",   // Púrpura para medio reconocimiento
-            low: "#ec4899",      // Rosa para bajo reconocimiento
-            default: "#e5e5e5"   // Gris para sin datos
-        }
-    },
-    favorability: {
-        title: "Favorabilidad",
-        colors: {
-            high: "#06b6d4",    // Cyan para alta favorabilidad
-            medium: "#14b8a6",   // Teal para media favorabilidad
-            low: "#f43f5e",      // Rosa fuerte para baja favorabilidad
-            default: "#e5e5e5"   // Gris para sin datos
-        }
-    }
-};
+interface GeoJSONFeature {
+    type: string;
+    geometry: {
+        type: string;
+        coordinates: number[][][];
+    };
+    properties: {
+        NOMBRE_DPT: string;
+    };
+}
 
-const getMetricColor = (value: number, metric: keyof typeof METRICS) => {
-    if (value === undefined) return METRICS[metric].colors.default;
-    if (value >= 70) return METRICS[metric].colors.high;
-    if (value >= 40) return METRICS[metric].colors.medium;
-    return METRICS[metric].colors.low;
-};
-
-const getMetricLevel = (value: number) => {
-    if (value === undefined) return "Sin datos";
-    if (value >= 70) return "Alto";
-    if (value >= 40) return "Medio";
-    return "Bajo";
-};
+interface GeoJSONData {
+    type: string;
+    features: GeoJSONFeature[];
+}
 
 export function RegionalHeatmap() {
-    const [selectedMetric, setSelectedMetric] = useState<keyof typeof METRICS>("influence");
+    const [selectedRegion, setSelectedRegion] = useState<RegionName | 'all'>('all');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [geoData, setGeoData] = useState<GeoJSONData | null>(null);
 
-    // En RegionalHeatmap.tsx, antes del return:
-    console.log("Nombres en departmentIntensityData:", Object.keys(departmentIntensityData));
-    console.log("Nombres en regionalAnalytics:", regionalAnalytics.map(r => r.region));
+    useEffect(() => {
+        const loadGeoData = async () => {
+            try {
+                const response = await fetch(process.env.NEXT_PUBLIC_COLOMBIA_GEO_URL || '');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setGeoData(data);
+                setIsLoading(false);
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError('Error desconocido al cargar el mapa');
+                }
+                setIsLoading(false);
+            }
+        };
+
+        loadGeoData().catch(console.error);
+    }, []);
+
+    const getDepartmentColor = (departmentName: string) => {
+        const normalizedName = normalizeText(departmentName);
+        const departmentRegion = DEPARTMENT_TO_REGION[normalizedName];
+
+        if (selectedRegion !== 'all' && departmentRegion !== selectedRegion) {
+            return "#e5e5e5";
+        }
+
+        const intensity = departmentIntensityData[normalizedName] || 0;
+        return getIntensityColor(intensity);
+    };
+
+    const getRegionStats = (region: RegionName) => {
+        const avgIntensity = calculateRegionIntensity(region, departmentIntensityData);
+        const departments = getDepartmentsInRegion(region);
+        return {
+            avgIntensity,
+            departmentCount: departments.length,
+            departments: departments
+        };
+    };
 
     return (
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Mapa de {METRICS[selectedMetric].title} Regional</CardTitle>
-                <div className="flex items-center gap-4">
-                    <Select value={selectedMetric} onValueChange={(value: keyof typeof METRICS) => setSelectedMetric(value)}>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between">
+                        <CardTitle>
+                            Mapa de {selectedRegion === 'all' ? 'Influencia Regional' : COLOMBIA_REGIONS[selectedRegion]}
+                        </CardTitle>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-[#22c55e]" />
+                                <span className="text-sm">Alta</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-[#eab308]" />
+                                <span className="text-sm">Media</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-[#ef4444]" />
+                                <span className="text-sm">Baja</span>
+                            </div>
+                        </div>
+                    </div>
+                    <Select value={selectedRegion} onValueChange={(value: RegionName | 'all') => setSelectedRegion(value)}>
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Seleccionar métrica" />
+                            <SelectValue placeholder="Filtrar por región" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="influence">Influencia</SelectItem>
-                            <SelectItem value="awareness">Reconocimiento</SelectItem>
-                            <SelectItem value="favorability">Favorabilidad</SelectItem>
+                            <SelectItem value="all">Todas las regiones</SelectItem>
+                            <SelectItem value="andina">Región Andina</SelectItem>
+                            <SelectItem value="caribe">Región Caribe</SelectItem>
+                            <SelectItem value="pacifica">Región Pacífica</SelectItem>
+                            <SelectItem value="orinoquia">Región Orinoquía</SelectItem>
+                            <SelectItem value="amazonica">Región Amazónica</SelectItem>
                         </SelectContent>
                     </Select>
-                    <div className="flex gap-2">
-                        {Object.entries(METRICS[selectedMetric].colors).map(([level, color]) => (
-                            level !== 'default' && (
-                                <div key={level} className="flex items-center gap-1">
-                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-                                    <span className="text-sm capitalize">{level}</span>
-                                </div>
-                            )
-                        ))}
-                    </div>
                 </div>
+                {selectedRegion !== 'all' && (
+                    <div className="text-sm text-muted-foreground mt-2">
+                        Intensidad promedio: {getRegionStats(selectedRegion).avgIntensity}%
+                    </div>
+                )}
             </CardHeader>
             <CardContent>
-                <div className="h-[600px] bg-muted/5 rounded-lg overflow-hidden">
-                    <ComposableMap
-                        projection="geoMercator"
-                        projectionConfig={{
-                            scale: 1800,
-                            center: [-74.5, 4.5]
-                        }}
-                    >
-                        <TooltipProvider>
-                            {/*Nota: para un caso futura se usará el archivo .JSON*/}
-                            {/*import colombiaGeoJson from '@/data/colombia-geo.json';*/}
-                            {/*// Y usarlo directamente en RegionalHeatmap.tsx:*/}
-                            {/*<Geographies geography={colombiaGeoJson}>*/}
-                            {/*<Geographies geography={process.env.NEXT_PUBLIC_COLOMBIA_GEO_URL || ""}>*/}
-                            {/*    {({geographies}) =>*/}
-                            {/*        geographies.map((geo) => {*/}
-                            {/*            const regionData = regionalAnalytics.find(*/}
-                            {/*                r => normalizeText(r.region) === normalizeText(geo.properties.NOMBRE_DPT)*/}
-                            {/*            );*/}
-                            {/*            let metricValue;*/}
-                            {/*            switch (selectedMetric) {*/}
-                            {/*                case 'influence':*/}
-                            {/*                    metricValue = departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)];*/}
-                            {/*                    break;*/}
-                            {/*                case 'awareness':*/}
-                            {/*                    metricValue = regionData?.campaignMetrics.awarenessLevel;*/}
-                            {/*                    break;*/}
-                            {/*                case 'favorability':*/}
-                            {/*                    metricValue = regionData?.campaignMetrics.favorability;*/}
-                            {/*                    break;*/}
-                            {/*            }*/}
-                            <Geographies geography={process.env.NEXT_PUBLIC_COLOMBIA_GEO_URL || ""}>
-                                {({geographies}) => {
-                                    // Log inicial de todos los nombres en nuestros datos
-                                    console.log("Nombres en departmentIntensityData:", Object.keys(departmentIntensityData));
-                                    console.log("Nombres en regionalAnalytics:", regionalAnalytics.map(r => r.region));
-
-                                    return geographies.map((geo) => {
-                                        // Debug para cada departamento
-                                        const geoName = geo.properties.NOMBRE_DPT;
-                                        const normalizedGeoName = normalizeText(geoName);
-                                        const hasIntensityData = normalizedGeoName in departmentIntensityData;
-                                        const hasRegionalData = regionalAnalytics.some(r =>
-                                            normalizeText(r.region) === normalizedGeoName
-                                        );
-
-                                        console.log("Comparación de nombres:", {
-                                            original: geoName,
-                                            normalizado: normalizedGeoName,
-                                            tieneIntensidad: hasIntensityData,
-                                            tieneDatosRegionales: hasRegionalData,
-                                            valorIntensidad: departmentIntensityData[normalizedGeoName],
-                                            datosRegionales: regionalAnalytics.find(r =>
-                                                normalizeText(r.region) === normalizedGeoName
-                                            )
-                                        });
-
-                                        const regionData = regionalAnalytics.find(
-                                            r => normalizeText(r.region) === normalizedGeoName
-                                        );
-
-                                        let metricValue;
-                                        switch (selectedMetric) {
-                                            case 'influence':
-                                                metricValue = departmentIntensityData[normalizedGeoName];
-                                                break;
-                                            case 'awareness':
-                                                metricValue = regionData?.campaignMetrics.awarenessLevel;
-                                                break;
-                                            case 'favorability':
-                                                metricValue = regionData?.campaignMetrics.favorability;
-                                                break;
-                                        }
-
-                                        return (
+                {/*<div className="h-[600px] bg-muted/5 rounded-lg overflow-hidden relative">*/}
+                {/*    {!isLoading && !error && (*/}
+                {/*        <ComposableMap*/}
+                {/*            projection="geoMercator"*/}
+                {/*            className="w-full h-full"*/}
+                {/*            projectionConfig={{*/}
+                {/*                scale: 1800,*/}
+                {/*                center: [-74.5, 4.5]*/}
+                {/*            }}*/}
+                {/*        >*/}
+                {/*            <TooltipProvider>*/}
+                {/*                <Geographies geography={process.env.NEXT_PUBLIC_COLOMBIA_GEO_URL}>*/}
+                {/*                    {({geographies}) => {*/}
+                {/*                        console.log("Geographies loaded:", geographies?.length);*/}
+                {/*                        if (!geographies) return null;*/}
+                {/*                        return geographies.map((geo: DepartmentGeography) => (*/}
+                {/*                            <Tooltip key={geo.rsmKey}>*/}
+                {/*                                <TooltipTrigger asChild>*/}
+                {/*                                    <Geography*/}
+                {/*                                        key={geo.rsmKey}*/}
+                {/*                                        geography={geo}*/}
+                {/*                                        fill={getDepartmentColor(geo.properties.NOMBRE_DPT)}*/}
+                {/*                                        stroke="#FFF"*/}
+                {/*                                        strokeWidth={0.5}*/}
+                {/*                                        style={{*/}
+                {/*                                            default: {outline: "none"},*/}
+                {/*                                            hover: {*/}
+                {/*                                                fill: "hsl(var(--primary))",*/}
+                {/*                                                outline: "none",*/}
+                {/*                                                cursor: "pointer"*/}
+                {/*                                            },*/}
+                {/*                                            pressed: {outline: "none"}*/}
+                {/*                                        }}*/}
+                {/*                                    />*/}
+                {/*                                </TooltipTrigger>*/}
+                {/*                                <TooltipContent>*/}
+                {/*                                    <div className="space-y-1">*/}
+                {/*                                        <p className="font-medium">{geo.properties.NOMBRE_DPT}</p>*/}
+                {/*                                        <p className="text-sm">*/}
+                {/*                                            Región: {DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]*/}
+                {/*                                            ? COLOMBIA_REGIONS[DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]]*/}
+                {/*                                            : 'No definida'}*/}
+                {/*                                        </p>*/}
+                {/*                                        <p className="text-sm">*/}
+                {/*                                            Influencia: {departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]*/}
+                {/*                                            ? `${departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]}%`*/}
+                {/*                                            : 'No disponible'}*/}
+                {/*                                        </p>*/}
+                {/*                                    </div>*/}
+                {/*                                </TooltipContent>*/}
+                {/*                            </Tooltip>*/}
+                {/*                        ));*/}
+                {/*                    }}*/}
+                {/*                </Geographies>*/}
+                {/*            </TooltipProvider>*/}
+                {/*        </ComposableMap>*/}
+                {/*    )}*/}
+                {/*</div>*/}
+                <div className="h-[600px] bg-muted/5 rounded-lg overflow-hidden relative">
+                    {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="flex flex-col items-center">
+                                <p>Cargando mapa...</p>
+                            </div>
+                        </div>
+                    )}
+                    {error && (
+                        <div className="absolute inset-0 flex items-center justify-center text-red-500">
+                            <p>Error: {error}</p>
+                        </div>
+                    )}
+                    {!isLoading && !error && geoData && (
+                        <ComposableMap
+                            projection="geoMercator"
+                            className="w-full h-full"
+                            projectionConfig={{
+                                scale: 1800,
+                                center: [-74.5, 4.5]
+                            }}
+                        >
+                            <TooltipProvider>
+                                <Geographies geography={geoData}>
+                                    {({geographies}) => {
+                                        console.log("Geographies loaded:", geographies?.length);
+                                        if (!geographies) return null;
+                                        return geographies.map((geo: DepartmentGeography) => (
                                             <Tooltip key={geo.rsmKey}>
-                                                <TooltipTrigger>
+                                                <TooltipTrigger asChild>
                                                     <Geography
+                                                        key={geo.rsmKey}
                                                         geography={geo}
-                                                        fill={getMetricColor(metricValue || 0, selectedMetric)}
+                                                        fill={getDepartmentColor(geo.properties.NOMBRE_DPT)}
                                                         stroke="#FFF"
                                                         strokeWidth={0.5}
                                                         style={{
@@ -200,33 +251,29 @@ export function RegionalHeatmap() {
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <div className="space-y-1">
-                                                        <p className="font-medium">{geoName}</p>
+                                                        <p className="font-medium">{geo.properties.NOMBRE_DPT}</p>
                                                         <p className="text-sm">
-                                                            {METRICS[selectedMetric].title}: {getMetricLevel(metricValue || 0)}
-                                                            {metricValue ? ` (${metricValue}%)` : ''}
+                                                            Región: {DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]
+                                                            ? COLOMBIA_REGIONS[DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]]
+                                                            : 'No definida'}
                                                         </p>
-                                                        {regionData && (
-                                                            <>
-                                                                <p className="text-sm">
-                                                                    Población votante: {regionData.demographics.votingAge.toLocaleString()}
-                                                                </p>
-                                                                <p className="text-sm">
-                                                                    Registrados: {regionData.demographics.registered.toLocaleString()}
-                                                                </p>
-                                                            </>
-                                                        )}
+                                                        <p className="text-sm">
+                                                            Influencia: {departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]
+                                                            ? `${departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]}%`
+                                                            : 'No disponible'}
+                                                        </p>
                                                     </div>
                                                 </TooltipContent>
                                             </Tooltip>
-                                        );
-                                    });
-                                }}
-                            </Geographies>
-                        </TooltipProvider>
-                    </ComposableMap>
+                                        ));
+                                    }}
+
+                                </Geographies>
+                            </TooltipProvider>
+                        </ComposableMap>
+                    )}
                 </div>
 
-                {/* Métricas resumidas */}
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                     {regionalAnalytics.slice(0, 3).map((region) => (
                         <Card key={region.region} className="p-4">

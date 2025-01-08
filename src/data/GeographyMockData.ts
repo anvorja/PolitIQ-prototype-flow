@@ -1822,7 +1822,7 @@ export const departmentIntensityData: { [key: string]: number } = {
     "ARAUCA": 25,
     "ARCHIPIELAGO DE SAN ANDRES PROVIDENCIA Y SANTA CATALINA": 25,
     "ATLANTICO": 75,
-    "BOGOTA D.C.": 95,
+    "SANTAFE DE BOGOTA D.C.": 95,
     "BOLIVAR": 50,
     "BOYACA": 45,
     "CALDAS": 35,

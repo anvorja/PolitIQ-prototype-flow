@@ -42,25 +42,6 @@ export function GeographyPanel() {
                         Monitoreo territorial y análisis estratégico por regiones
                     </p>
                 </div>
-                {/*<div className="flex gap-2">*/}
-                {/*    <Select defaultValue="all">*/}
-                {/*        <SelectTrigger className="w-[200px]">*/}
-                {/*            <SelectValue placeholder="Filtrar por región" />*/}
-                {/*        </SelectTrigger>*/}
-                {/*        <SelectContent>*/}
-                {/*            <SelectItem value="all">Todas las regiones</SelectItem>*/}
-                {/*            <SelectItem value="andina">Región Andina</SelectItem>*/}
-                {/*            <SelectItem value="caribe">Región Caribe</SelectItem>*/}
-                {/*            <SelectItem value="pacifica">Región Pacífica</SelectItem>*/}
-                {/*            <SelectItem value="orinoquia">Región Orinoquía</SelectItem>*/}
-                {/*            <SelectItem value="amazonica">Región Amazónica</SelectItem>*/}
-                {/*        </SelectContent>*/}
-                {/*    </Select>*/}
-                {/*    <Button>*/}
-                {/*        <Map className="w-4 h-4 mr-2" />*/}
-                {/*        Exportar Mapa*/}
-                {/*    </Button>*/}
-                {/*</div>*/}
                 <div className="flex gap-2">
                     <Select defaultValue="all">
                         <SelectTrigger className="w-[200px]">
