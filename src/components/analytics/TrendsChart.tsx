@@ -1,4 +1,4 @@
-// analytics/TrendsChart.tsx
+// src/components/analytics/TrendsChart.tsx
 
 "use client"
 
@@ -13,12 +13,59 @@ import {
     Legend,
     ResponsiveContainer,
     Area,
-    ComposedChart
+    ComposedChart, TooltipProps
 } from 'recharts';
 import { trendData, topicTrends } from '@/data/TrendsMockData';
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import { formatShortDate } from "@/lib/dateUtils";
 import { translateMetricName, formatSentimentValue } from "@/lib/translateUtils";
+import { cn } from "@/lib/utils";
+
+type CustomTooltipProps = TooltipProps<number, string> & {
+    active?: boolean;
+    payload?: Array<{
+        value: number;
+        name: string;
+        dataKey: string;
+    }>;
+    label?: string;
+};
+
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
+    if (!active || !payload) return null;
+
+    return (
+        <div className="min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3 shadow-md backdrop-blur-sm">
+            <p className="mb-2 text-sm font-medium text-muted-foreground">
+                {formatShortDate(label || '')}
+            </p>
+            <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-muted-foreground">
+                        {translateMetricName('mentions')}:
+                    </span>
+                    <span className="font-medium text-sm">
+                        {payload[0]?.value?.toLocaleString()}
+                    </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-muted-foreground">
+                        {translateMetricName('sentiment')}:
+                    </span>
+                    <span className={cn(
+                        "font-medium text-sm",
+                        Number(payload[1]?.value) >= 70 ? "text-emerald-500 dark:text-emerald-400" :
+                            Number(payload[1]?.value) >= 50 ? "text-amber-500 dark:text-amber-400" :
+                                "text-rose-500 dark:text-rose-400"
+                    )}>
+                        {formatSentimentValue(payload[1]?.value)}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 export function TrendsChart() {
     return (
@@ -54,13 +101,7 @@ export function TrendsChart() {
                                     position: 'insideRight'
                                 }}
                             />
-                            <Tooltip
-                                labelFormatter={formatShortDate}
-                                formatter={(value: number, name: string) => [
-                                    name === 'sentiment' ? formatSentimentValue(value) : value.toLocaleString(),
-                                    translateMetricName(name)
-                                ]}
-                            />
+                            <Tooltip content={<CustomTooltip />} />
                             <Legend
                                 formatter={(value) => translateMetricName(value)}
                             />
@@ -84,7 +125,6 @@ export function TrendsChart() {
                         </ComposedChart>
                     </ResponsiveContainer>
                 </div>
-
                 {/* Temas en tendencia */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                     {topicTrends.map((topic) => (
