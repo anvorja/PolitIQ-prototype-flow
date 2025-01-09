@@ -46,10 +46,18 @@ export function Sidebar() {
                                     <Link
                                         key={item.href}
                                         href={item.href}
+                                        // version1
+                                        // className={cn(
+                                        //     "flex items-center gap-3 px-2 py-2 rounded-md text-sm transition-colors",
+                                        //     "hover:bg-purple-50 hover:text-purple-700",
+                                        //     isActive && "bg-purple-50 text-purple-700"
+                                        // )}
+                                        // version2
                                         className={cn(
                                             "flex items-center gap-3 px-2 py-2 rounded-md text-sm transition-colors",
-                                            "hover:bg-purple-50 hover:text-purple-700",
-                                            isActive && "bg-purple-50 text-purple-700"
+                                            "hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300",
+                                            isActive && "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300",
+                                            !isActive && "text-foreground"
                                         )}
                                     >
                                         <item.icon className="w-4 h-4" />

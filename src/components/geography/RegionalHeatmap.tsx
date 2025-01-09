@@ -144,64 +144,6 @@ export function RegionalHeatmap() {
                 )}
             </CardHeader>
             <CardContent>
-                {/*<div className="h-[600px] bg-muted/5 rounded-lg overflow-hidden relative">*/}
-                {/*    {!isLoading && !error && (*/}
-                {/*        <ComposableMap*/}
-                {/*            projection="geoMercator"*/}
-                {/*            className="w-full h-full"*/}
-                {/*            projectionConfig={{*/}
-                {/*                scale: 1800,*/}
-                {/*                center: [-74.5, 4.5]*/}
-                {/*            }}*/}
-                {/*        >*/}
-                {/*            <TooltipProvider>*/}
-                {/*                <Geographies geography={process.env.NEXT_PUBLIC_COLOMBIA_GEO_URL}>*/}
-                {/*                    {({geographies}) => {*/}
-                {/*                        console.log("Geographies loaded:", geographies?.length);*/}
-                {/*                        if (!geographies) return null;*/}
-                {/*                        return geographies.map((geo: DepartmentGeography) => (*/}
-                {/*                            <Tooltip key={geo.rsmKey}>*/}
-                {/*                                <TooltipTrigger asChild>*/}
-                {/*                                    <Geography*/}
-                {/*                                        key={geo.rsmKey}*/}
-                {/*                                        geography={geo}*/}
-                {/*                                        fill={getDepartmentColor(geo.properties.NOMBRE_DPT)}*/}
-                {/*                                        stroke="#FFF"*/}
-                {/*                                        strokeWidth={0.5}*/}
-                {/*                                        style={{*/}
-                {/*                                            default: {outline: "none"},*/}
-                {/*                                            hover: {*/}
-                {/*                                                fill: "hsl(var(--primary))",*/}
-                {/*                                                outline: "none",*/}
-                {/*                                                cursor: "pointer"*/}
-                {/*                                            },*/}
-                {/*                                            pressed: {outline: "none"}*/}
-                {/*                                        }}*/}
-                {/*                                    />*/}
-                {/*                                </TooltipTrigger>*/}
-                {/*                                <TooltipContent>*/}
-                {/*                                    <div className="space-y-1">*/}
-                {/*                                        <p className="font-medium">{geo.properties.NOMBRE_DPT}</p>*/}
-                {/*                                        <p className="text-sm">*/}
-                {/*                                            Región: {DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]*/}
-                {/*                                            ? COLOMBIA_REGIONS[DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]]*/}
-                {/*                                            : 'No definida'}*/}
-                {/*                                        </p>*/}
-                {/*                                        <p className="text-sm">*/}
-                {/*                                            Influencia: {departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]*/}
-                {/*                                            ? `${departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]}%`*/}
-                {/*                                            : 'No disponible'}*/}
-                {/*                                        </p>*/}
-                {/*                                    </div>*/}
-                {/*                                </TooltipContent>*/}
-                {/*                            </Tooltip>*/}
-                {/*                        ));*/}
-                {/*                    }}*/}
-                {/*                </Geographies>*/}
-                {/*            </TooltipProvider>*/}
-                {/*        </ComposableMap>*/}
-                {/*    )}*/}
-                {/*</div>*/}
                 <div className="h-[600px] bg-muted/5 rounded-lg overflow-hidden relative">
                     {isLoading && (
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -239,35 +181,47 @@ export function RegionalHeatmap() {
                                                         stroke="#FFF"
                                                         strokeWidth={0.5}
                                                         style={{
-                                                            default: {outline: "none"},
+                                                            default: {
+                                                                outline: "none",
+                                                                transition: "all 250ms"
+                                                            },
                                                             hover: {
                                                                 fill: "hsl(var(--primary))",
                                                                 outline: "none",
-                                                                cursor: "pointer"
+                                                                cursor: "pointer",
+                                                                stroke: "#fff",
+                                                                strokeWidth: 1.5
                                                             },
-                                                            pressed: {outline: "none"}
+                                                            pressed: {
+                                                                outline: "none"
+                                                            }
                                                         }}
                                                     />
                                                 </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <div className="space-y-1">
-                                                        <p className="font-medium">{geo.properties.NOMBRE_DPT}</p>
-                                                        <p className="text-sm">
-                                                            Región: {DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]
-                                                            ? COLOMBIA_REGIONS[DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]]
-                                                            : 'No definida'}
-                                                        </p>
-                                                        <p className="text-sm">
-                                                            Influencia: {departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]
-                                                            ? `${departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]}%`
-                                                            : 'No disponible'}
-                                                        </p>
+                                                <TooltipContent className="bg-black/90 border-0">
+                                                    <div className="space-y-1.5 p-1">
+                                                        <p className="text-base font-semibold text-white">{geo.properties.NOMBRE_DPT}</p>
+                                                        <div className="space-y-1 text-sm">
+                                                            <div className="flex justify-between items-center gap-4">
+                                                                <span className="text-gray-400">Región</span>
+                                                                <span className="text-white">
+                                                                    {DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]
+                                                                        ? COLOMBIA_REGIONS[DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]]: 'No definida'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center gap-4">
+                                                                <span className="text-gray-400">Influencia</span>
+                                                                <span className="text-white font-medium">
+                                                                    {departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]
+                                                                        ? `${departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]}%`: 'No disponible'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </TooltipContent>
                                             </Tooltip>
                                         ));
                                     }}
-
                                 </Geographies>
                             </TooltipProvider>
                         </ComposableMap>
