@@ -1,4 +1,4 @@
-// analytics/TopicsAnalysis.tsx
+// src/components/analytics/TopicsAnalysis.tsx
 
 "use client"
 
@@ -18,7 +18,8 @@ import {
 } from 'recharts';
 import { topicsAnalysisData } from '@/data/TopicsAnalysisMockData';
 import { formatShortDate } from '@/lib/dateUtils';
-import { translateMetricName, translateTooltipTerm, formatSentimentValue } from "@/lib/translateUtils";
+import { translateMetricName, formatSentimentValue } from "@/lib/translateUtils";
+import {CustomTooltip, RelatedTopicTooltip} from "@/components/analytics/Tooltips";
 
 export function TopicsAnalysis() {
     const [selectedTopic, setSelectedTopic] = useState(topicsAnalysisData[0]);
@@ -78,36 +79,73 @@ export function TopicsAnalysis() {
                         </CardContent>
                     </Card>
 
-                    {/* Resto del componente... */}{/* Temas Relacionados */}
+                    {/* Temas Relacionados */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">Temas Relacionados</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {/* ... */}
                             {/* Temas Relacionados */}
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Temas Relacionados</CardTitle>
+                                    <CardTitle className="text-lg"></CardTitle>
                                 </CardHeader>
-                                <CardContent>
-                                    <div className="h-[200px]">
+                                <CardContent className="pt-0"> {/* Removido padding top extra */}
+                                    <div className="h-[250px]"> {/* Altura ajustada */}
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart
                                                 data={selectedTopic.relatedTopics}
                                                 layout="vertical"
-                                                margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                                                margin={{ top: 5, right: 25, left: 140, bottom: 5 }}
+                                                barSize={28}  // Barras más prominentes
                                             >
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis type="number" domain={[0, 100]} />
-                                                <YAxis dataKey="topic" type="category" width={100} />
+                                                <CartesianGrid
+                                                    strokeDasharray="3 3"
+                                                    horizontal={true}
+                                                    vertical={true}
+                                                    className="opacity-15"
+                                                />
+                                                <XAxis
+                                                    type="number"
+                                                    domain={[0, 100]}
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    tick={{
+                                                        fill: 'hsl(var(--muted-foreground))',
+                                                        fontSize: 13
+                                                    }}
+                                                    tickFormatter={(value) => `${value}%`}
+                                                    tickCount={5}
+                                                />
+                                                <YAxis
+                                                    dataKey="topic"
+                                                    type="category"
+                                                    width={130}
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    tick={{
+                                                        fill: 'hsl(var(--foreground))',
+                                                        fontSize: 14,
+                                                        width: 120
+                                                    }}
+                                                    dx={-5}  // Ajuste fino de la posición del texto
+                                                />
                                                 <Tooltip
-                                                    formatter={(value: number) => [`${value}%`, 'Relación']}
+                                                    content={<RelatedTopicTooltip />}
+                                                    cursor={{
+                                                        fill: 'hsl(var(--muted)/0.1)'
+                                                    }}
                                                 />
                                                 <Bar
                                                     dataKey="strength"
-                                                    fill="hsl(var(--primary))"
                                                     radius={[0, 4, 4, 0]}
+                                                    fill="hsl(var(--primary))"
+                                                    background={{
+                                                        fill: 'hsl(var(--muted)/0.1)'
+                                                    }}
+                                                    animationBegin={0}
+                                                    animationDuration={750}
+                                                    animationEasing="ease-out"
                                                 />
                                             </BarChart>
                                         </ResponsiveContainer>
@@ -153,13 +191,7 @@ export function TopicsAnalysis() {
                                         />
                                         <YAxis yAxisId="left" />
                                         <YAxis yAxisId="right" orientation="right" />
-                                        <Tooltip
-                                            labelFormatter={formatShortDate}
-                                            formatter={(value: number, name: string) => [
-                                                name === 'sentiment' ? formatSentimentValue(value) : value,
-                                                translateTooltipTerm(name)
-                                            ]}
-                                        />
+                                        <Tooltip content={<CustomTooltip />} />
                                         <Legend
                                             formatter={(value) => translateMetricName(value)}
                                         />
