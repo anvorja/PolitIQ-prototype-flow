@@ -87,7 +87,12 @@ export function AlertsSidebar() {
                     return (
                         <div
                             key={alert.id}
-                            className="flex items-start gap-3 p-3 rounded-lg bg-muted/5 hover:bg-accent/5 transition-colors cursor-pointer"
+                            className="flex items-start gap-3 p-3 rounded-lg
+                                bg-gray-50 hover:bg-gray-100
+                                dark:bg-muted/10 dark:hover:bg-accent/10
+                                border border-border/40 hover:border-border/80
+                                dark:border-border/20 dark:hover:border-border/40
+                                transition-all cursor-pointer"
                         >
                             <div className={getPriorityColor(alert.priority)}>
                                 <Icon className="w-5 h-5" />
