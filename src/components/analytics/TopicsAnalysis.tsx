@@ -272,7 +272,7 @@ export function TopicsAnalysis() {
                                                     strokeDasharray="3 3"
                                                     horizontal={true}
                                                     vertical={true}
-                                                    className="opacity-15"  // Más sutil aún
+                                                    className="opacity-15"
                                                 />
                                                 <XAxis
                                                     type="number"
