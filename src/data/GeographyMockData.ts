@@ -1491,7 +1491,7 @@ export const regionalAnalytics: RegionalAnalytics[] = [
         },
         campaignMetrics: {
             awarenessLevel: 65,
-            favorability: 58,
+            favorability: 58    ,
             messageResonance: 72,
             volunteerBase: 1200,
             resources: [
