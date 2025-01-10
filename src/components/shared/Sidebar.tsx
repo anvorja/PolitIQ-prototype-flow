@@ -55,8 +55,9 @@ export function Sidebar() {
                                         // version2
                                         className={cn(
                                             "flex items-center gap-3 px-2 py-2 rounded-md text-sm transition-colors",
-                                            "hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300",
-                                            isActive && "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300",
+                                            "hover:bg-primary/10 dark:hover:bg-primary/20",
+                                            "hover:text-primary dark:hover:text-primary",
+                                            isActive && "bg-primary/15 dark:bg-primary/25 text-primary dark:text-primary font-medium",
                                             !isActive && "text-foreground"
                                         )}
                                     >

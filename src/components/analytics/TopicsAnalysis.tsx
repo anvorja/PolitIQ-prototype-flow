@@ -20,6 +20,7 @@ import { topicsAnalysisData } from '@/data/TopicsAnalysisMockData';
 import { formatShortDate } from '@/lib/dateUtils';
 import { translateMetricName, formatSentimentValue } from "@/lib/translateUtils";
 import {CustomTooltip, RelatedTopicTooltip} from "@/components/analytics/Tooltips";
+import {cn} from "@/lib/utils";
 
 export function TopicsAnalysis() {
     const [selectedTopic, setSelectedTopic] = useState(topicsAnalysisData[0]);
@@ -36,11 +37,18 @@ export function TopicsAnalysis() {
                         <button
                             key={topic.topic}
                             onClick={() => setSelectedTopic(topic)}
-                            className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+                            // className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+                            //     selectedTopic.topic === topic.topic
+                            //         ? 'bg-primary text-primary-foreground'
+                            //         : 'bg-muted hover:bg-muted/80'
+                            // }`}
+                            // azul
+                            className={cn(
+                                "px-4 py-2 rounded-lg transition-colors whitespace-nowrap",
                                 selectedTopic.topic === topic.topic
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted hover:bg-muted/80'
-                            }`}
+                                    ? "bg-primary text-primary-foreground font-medium"
+                                    : "bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+                            )}
                         >
                             {topic.topic}
                         </button>
@@ -80,78 +88,145 @@ export function TopicsAnalysis() {
                     </Card>
 
                     {/* Temas Relacionados */}
+                    {/*<Card>*/}
+                    {/*    <CardHeader>*/}
+                    {/*        <CardTitle className="text-lg">Temas Relacionados</CardTitle>*/}
+                    {/*    </CardHeader>*/}
+                    {/*    <CardContent>*/}
+                    {/*        /!* Temas Relacionados *!/*/}
+                    {/*        <Card>*/}
+                    {/*            <CardHeader>*/}
+                    {/*                <CardTitle className="text-lg"></CardTitle>*/}
+                    {/*            </CardHeader>*/}
+                    {/*            <CardContent className="pt-0"> /!* Removido padding top extra *!/*/}
+                    {/*                <div className="h-[250px]"> /!* Altura ajustada *!/*/}
+                    {/*                    <ResponsiveContainer width="100%" height="100%">*/}
+                    {/*                        <BarChart*/}
+                    {/*                            data={selectedTopic.relatedTopics}*/}
+                    {/*                            layout="vertical"*/}
+                    {/*                            margin={{ top: 5, right: 25, left: 140, bottom: 5 }}*/}
+                    {/*                            barSize={28}  // Barras más prominentes*/}
+                    {/*                        >*/}
+                    {/*                            <CartesianGrid*/}
+                    {/*                                strokeDasharray="3 3"*/}
+                    {/*                                horizontal={true}*/}
+                    {/*                                vertical={true}*/}
+                    {/*                                className="opacity-15"*/}
+                    {/*                            />*/}
+                    {/*                            <XAxis*/}
+                    {/*                                type="number"*/}
+                    {/*                                domain={[0, 100]}*/}
+                    {/*                                tickLine={false}*/}
+                    {/*                                axisLine={false}*/}
+                    {/*                                tick={{*/}
+                    {/*                                    fill: 'hsl(var(--muted-foreground))',*/}
+                    {/*                                    fontSize: 13*/}
+                    {/*                                }}*/}
+                    {/*                                tickFormatter={(value) => `${value}%`}*/}
+                    {/*                                tickCount={5}*/}
+                    {/*                            />*/}
+                    {/*                            <YAxis*/}
+                    {/*                                dataKey="topic"*/}
+                    {/*                                type="category"*/}
+                    {/*                                width={130}*/}
+                    {/*                                tickLine={false}*/}
+                    {/*                                axisLine={false}*/}
+                    {/*                                tick={{*/}
+                    {/*                                    fill: 'hsl(var(--foreground))',*/}
+                    {/*                                    fontSize: 14,*/}
+                    {/*                                    width: 120*/}
+                    {/*                                }}*/}
+                    {/*                                dx={-5}  // Ajuste fino de la posición del texto*/}
+                    {/*                            />*/}
+                    {/*                            <Tooltip*/}
+                    {/*                                content={<RelatedTopicTooltip />}*/}
+                    {/*                                cursor={{*/}
+                    {/*                                    fill: 'hsl(var(--muted)/0.1)'*/}
+                    {/*                                }}*/}
+                    {/*                            />*/}
+                    {/*                            <Bar*/}
+                    {/*                                dataKey="strength"*/}
+                    {/*                                radius={[0, 4, 4, 0]}*/}
+                    {/*                                fill="hsl(var(--primary))"*/}
+                    {/*                                background={{*/}
+                    {/*                                    fill: 'hsl(var(--muted)/0.1)'*/}
+                    {/*                                }}*/}
+                    {/*                                animationBegin={0}*/}
+                    {/*                                animationDuration={750}*/}
+                    {/*                                animationEasing="ease-out"*/}
+                    {/*                            />*/}
+                    {/*                        </BarChart>*/}
+                    {/*                    </ResponsiveContainer>*/}
+                    {/*                </div>*/}
+                    {/*            </CardContent>*/}
+                    {/*        </Card>*/}
+                    {/*    </CardContent>*/}
+                    {/*</Card>*/}
+                    {/*// Temas Relacionados*/}
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">Temas Relacionados</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            {/* Temas Relacionados */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg"></CardTitle>
-                                </CardHeader>
-                                <CardContent className="pt-0"> {/* Removido padding top extra */}
-                                    <div className="h-[250px]"> {/* Altura ajustada */}
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart
-                                                data={selectedTopic.relatedTopics}
-                                                layout="vertical"
-                                                margin={{ top: 5, right: 25, left: 140, bottom: 5 }}
-                                                barSize={28}  // Barras más prominentes
-                                            >
-                                                <CartesianGrid
-                                                    strokeDasharray="3 3"
-                                                    horizontal={true}
-                                                    vertical={true}
-                                                    className="opacity-15"
-                                                />
-                                                <XAxis
-                                                    type="number"
-                                                    domain={[0, 100]}
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tick={{
-                                                        fill: 'hsl(var(--muted-foreground))',
-                                                        fontSize: 13
-                                                    }}
-                                                    tickFormatter={(value) => `${value}%`}
-                                                    tickCount={5}
-                                                />
-                                                <YAxis
-                                                    dataKey="topic"
-                                                    type="category"
-                                                    width={130}
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tick={{
-                                                        fill: 'hsl(var(--foreground))',
-                                                        fontSize: 14,
-                                                        width: 120
-                                                    }}
-                                                    dx={-5}  // Ajuste fino de la posición del texto
-                                                />
-                                                <Tooltip
-                                                    content={<RelatedTopicTooltip />}
-                                                    cursor={{
-                                                        fill: 'hsl(var(--muted)/0.1)'
-                                                    }}
-                                                />
-                                                <Bar
-                                                    dataKey="strength"
-                                                    radius={[0, 4, 4, 0]}
-                                                    fill="hsl(var(--primary))"
-                                                    background={{
-                                                        fill: 'hsl(var(--muted)/0.1)'
-                                                    }}
-                                                    animationBegin={0}
-                                                    animationDuration={750}
-                                                    animationEasing="ease-out"
-                                                />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                        <CardContent className="pt-0">
+                            <div className="h-[250px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                        data={selectedTopic.relatedTopics}
+                                        layout="vertical"
+                                        margin={{ top: 5, right: 25, left: 140, bottom: 5 }}
+                                        barSize={28}
+                                    >
+                                        <CartesianGrid
+                                            strokeDasharray="3 3"
+                                            horizontal={true}
+                                            vertical={true}
+                                            className="opacity-20"
+                                        />
+                                        <XAxis
+                                            type="number"
+                                            domain={[0, 100]}
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tick={{
+                                                fill: 'hsl(var(--muted-foreground))',
+                                                fontSize: 13
+                                            }}
+                                            tickFormatter={(value) => `${value}%`}
+                                            tickCount={5}
+                                        />
+                                        <YAxis
+                                            dataKey="topic"
+                                            type="category"
+                                            width={130}
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tick={{
+                                                fill: 'hsl(var(--foreground))',
+                                                fontSize: 14,
+                                                width: 120
+                                            }}
+                                            dx={-5}
+                                        />
+                                        <Tooltip
+                                            content={<RelatedTopicTooltip />}
+                                            cursor={{
+                                                fill: 'hsl(var(--muted)/0.1)'
+                                            }}
+                                        />
+                                        <Bar
+                                            dataKey="strength"
+                                            radius={[0, 4, 4, 0]}
+                                            fill="hsl(var(--primary)/0.9)"  // Color más suave para modo light
+                                            background={{
+                                                fill: 'hsl(var(--muted)/0.1)'
+                                            }}
+                                            animationBegin={0}
+                                            animationDuration={750}
+                                            animationEasing="ease-out"
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
                         </CardContent>
                     </Card>
 
