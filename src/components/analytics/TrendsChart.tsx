@@ -3,6 +3,7 @@
 "use client"
 
 import React from 'react';
+import { useTheme } from "next-themes"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Line,
@@ -23,6 +24,8 @@ import {TrendsChartTooltip} from "@/components/analytics/Tooltips";
 import {cn} from "@/lib/utils";
 
 export function TrendsChart() {
+
+    const { theme } = useTheme();
     // Función para personalizar el color del texto en la leyenda
     const renderColorfulLegendText = (value: string) => {
         const translatedValue = translateMetricName(value);
@@ -78,7 +81,8 @@ export function TrendsChart() {
                                 dataKey="mentions"
                                 name="mentions"
                                 fill="hsl(var(--primary))"
-                                fillOpacity={0.1}
+                                // fillOpacity={0.13}
+                                fillOpacity={theme === 'dark' ? 0.1 : 0.08} // Ajustar opacidad según tema
                                 stroke="hsl(var(--primary))"
                             />
                             <Line

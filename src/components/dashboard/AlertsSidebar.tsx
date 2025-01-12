@@ -16,6 +16,7 @@ import { alertGroups } from '@/data/AlertsMockData';
 import { formatShortDate } from '@/lib/dateUtils';
 import type { Alert as AlertType } from '@/types/alerts';
 import Link from 'next/link';
+import {cn} from "@/lib/utils";
 
 const getAlertIcon = (type: AlertType['type']) => {
     switch (type) {
@@ -70,7 +71,10 @@ export function AlertsSidebar() {
         .slice(0, 5); // Solo mostramos las 5 más recientes
 
     return (
-        <Card>
+        // <Card>
+        <Card className={cn(
+            "dark:bg-gradient-to-br dark:from-card/90 dark:to-card/100"
+        )}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-lg font-medium">Alertas Recientes</CardTitle>
                 <Link

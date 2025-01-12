@@ -11,7 +11,12 @@ export const RelatedTopicTooltip: React.FC<RelatedTopicTooltipProps> = ({ active
     const data = payload[0].payload;
 
     return (
-        <div className="min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3 shadow-md backdrop-blur-sm">
+        <div className={cn(
+            "min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3",
+            "backdrop-blur-sm",
+            "dark:shadow-lg dark:shadow-black/20",
+            "shadow-lg shadow-black/5"
+        )}>
             <p className="mb-2 text-sm font-medium">
                 {data.topic}
             </p>
@@ -37,14 +42,14 @@ export const RelatedTopicTooltip: React.FC<RelatedTopicTooltipProps> = ({ active
                             data.strength >= 40 ? "bg-amber-500" :
                                 "bg-rose-500"
                     )}
-                    style={{ width: `${data.strength}%` }}
+                    style={{width: `${data.strength}%`}}
                 />
             </div>
         </div>
     );
 };
 
-export const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
+export const CustomTooltip: React.FC<CustomTooltipProps> = ({active, payload, label}) => {
     if (!active || !payload) return null;
 
     // Encuentra los valores de mentions y sentiment
@@ -52,7 +57,12 @@ export const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, l
     const sentiment = payload.find(p => p.dataKey === 'sentiment')?.value;
 
     return (
-        <div className="min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3 shadow-md backdrop-blur-sm">
+        <div className={cn(
+            "min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3",
+            "backdrop-blur-sm",
+            "dark:shadow-lg dark:shadow-black/20",
+            "shadow-lg shadow-black/5"
+        )}>
             <p className="mb-2 text-sm font-medium text-muted-foreground">
                 {formatShortDate(label || '')}
             </p>
@@ -87,7 +97,12 @@ export const TrendsChartTooltip: React.FC<TrendsCustomTooltipProps> = ({ active,
     if (!active || !payload) return null;
 
     return (
-        <div className="min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3 shadow-md backdrop-blur-sm">
+        <div className={cn(
+            "min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3",
+            "backdrop-blur-sm",
+            "dark:shadow-lg dark:shadow-black/20",
+            "shadow-lg shadow-black/5"
+        )}>
             <p className="mb-2 text-sm font-medium text-muted-foreground">
                 {formatShortDate(label || '')}
             </p>

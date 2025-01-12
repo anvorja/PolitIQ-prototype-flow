@@ -1,5 +1,4 @@
 // src/components/analytics/TopicsAnalysis.tsx
-
 "use client"
 
 import React, { useState } from 'react';
@@ -26,7 +25,12 @@ export function TopicsAnalysis() {
     const [selectedTopic, setSelectedTopic] = useState(topicsAnalysisData[0]);
 
     return (
-        <Card className="col-span-full">
+        // otra propuesta
+        <Card className={cn(
+            "col-span-full",
+            "dark:bg-gradient-to-br dark:from-card/90 dark:to-card/100"
+        )}>
+            {/*<Card className="col-span-full">*/}
             <CardHeader>
                 <CardTitle>Análisis de Temas</CardTitle>
             </CardHeader>
@@ -88,81 +92,6 @@ export function TopicsAnalysis() {
                     </Card>
 
                     {/* Temas Relacionados */}
-                    {/*<Card>*/}
-                    {/*    <CardHeader>*/}
-                    {/*        <CardTitle className="text-lg">Temas Relacionados</CardTitle>*/}
-                    {/*    </CardHeader>*/}
-                    {/*    <CardContent>*/}
-                    {/*        /!* Temas Relacionados *!/*/}
-                    {/*        <Card>*/}
-                    {/*            <CardHeader>*/}
-                    {/*                <CardTitle className="text-lg"></CardTitle>*/}
-                    {/*            </CardHeader>*/}
-                    {/*            <CardContent className="pt-0"> /!* Removido padding top extra *!/*/}
-                    {/*                <div className="h-[250px]"> /!* Altura ajustada *!/*/}
-                    {/*                    <ResponsiveContainer width="100%" height="100%">*/}
-                    {/*                        <BarChart*/}
-                    {/*                            data={selectedTopic.relatedTopics}*/}
-                    {/*                            layout="vertical"*/}
-                    {/*                            margin={{ top: 5, right: 25, left: 140, bottom: 5 }}*/}
-                    {/*                            barSize={28}  // Barras más prominentes*/}
-                    {/*                        >*/}
-                    {/*                            <CartesianGrid*/}
-                    {/*                                strokeDasharray="3 3"*/}
-                    {/*                                horizontal={true}*/}
-                    {/*                                vertical={true}*/}
-                    {/*                                className="opacity-15"*/}
-                    {/*                            />*/}
-                    {/*                            <XAxis*/}
-                    {/*                                type="number"*/}
-                    {/*                                domain={[0, 100]}*/}
-                    {/*                                tickLine={false}*/}
-                    {/*                                axisLine={false}*/}
-                    {/*                                tick={{*/}
-                    {/*                                    fill: 'hsl(var(--muted-foreground))',*/}
-                    {/*                                    fontSize: 13*/}
-                    {/*                                }}*/}
-                    {/*                                tickFormatter={(value) => `${value}%`}*/}
-                    {/*                                tickCount={5}*/}
-                    {/*                            />*/}
-                    {/*                            <YAxis*/}
-                    {/*                                dataKey="topic"*/}
-                    {/*                                type="category"*/}
-                    {/*                                width={130}*/}
-                    {/*                                tickLine={false}*/}
-                    {/*                                axisLine={false}*/}
-                    {/*                                tick={{*/}
-                    {/*                                    fill: 'hsl(var(--foreground))',*/}
-                    {/*                                    fontSize: 14,*/}
-                    {/*                                    width: 120*/}
-                    {/*                                }}*/}
-                    {/*                                dx={-5}  // Ajuste fino de la posición del texto*/}
-                    {/*                            />*/}
-                    {/*                            <Tooltip*/}
-                    {/*                                content={<RelatedTopicTooltip />}*/}
-                    {/*                                cursor={{*/}
-                    {/*                                    fill: 'hsl(var(--muted)/0.1)'*/}
-                    {/*                                }}*/}
-                    {/*                            />*/}
-                    {/*                            <Bar*/}
-                    {/*                                dataKey="strength"*/}
-                    {/*                                radius={[0, 4, 4, 0]}*/}
-                    {/*                                fill="hsl(var(--primary))"*/}
-                    {/*                                background={{*/}
-                    {/*                                    fill: 'hsl(var(--muted)/0.1)'*/}
-                    {/*                                }}*/}
-                    {/*                                animationBegin={0}*/}
-                    {/*                                animationDuration={750}*/}
-                    {/*                                animationEasing="ease-out"*/}
-                    {/*                            />*/}
-                    {/*                        </BarChart>*/}
-                    {/*                    </ResponsiveContainer>*/}
-                    {/*                </div>*/}
-                    {/*            </CardContent>*/}
-                    {/*        </Card>*/}
-                    {/*    </CardContent>*/}
-                    {/*</Card>*/}
-                    {/*// Temas Relacionados*/}
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">Temas Relacionados</CardTitle>
@@ -173,7 +102,7 @@ export function TopicsAnalysis() {
                                     <BarChart
                                         data={selectedTopic.relatedTopics}
                                         layout="vertical"
-                                        margin={{ top: 5, right: 25, left: 140, bottom: 5 }}
+                                        margin={{ top: 5, right: 50, left: 100, bottom: 5 }}
                                         barSize={28}
                                     >
                                         <CartesianGrid
@@ -197,13 +126,13 @@ export function TopicsAnalysis() {
                                         <YAxis
                                             dataKey="topic"
                                             type="category"
-                                            width={130}
+                                            width={80}
                                             tickLine={false}
                                             axisLine={false}
                                             tick={{
                                                 fill: 'hsl(var(--foreground))',
-                                                fontSize: 14,
-                                                width: 120
+                                                fontSize: 16,
+                                                width: 100
                                             }}
                                             dx={-5}
                                         />

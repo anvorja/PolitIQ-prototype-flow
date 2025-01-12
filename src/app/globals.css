@@ -45,7 +45,7 @@
     --muted-foreground: 215.4 16.3% 56.9%;
     --accent: 270 95% 75%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
+    --destructive: 0 90% 65%;  /* alertas */
     --destructive-foreground: 210 40% 98%;
     --border: 216 34% 17%;
     --input: 216 34% 17%;
@@ -61,6 +61,11 @@
     --chart-3: 31 95% 72%;   /* Naranja más vibrante */
     --chart-4: 326 95% 73%;  /* Rosa */
     --chart-5: 161 95% 70%;  /* Verde azulado */
+    --card-gradient: linear-gradient(
+            to bottom right,
+            hsl(var(--card) / 0.9),
+            hsl(var(--card) / 1)
+    );
   }
 }
 
