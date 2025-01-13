@@ -3,6 +3,7 @@ import {cn} from "@/lib/utils";
 import {formatShortDate} from "@/lib/dateUtils";
 import {formatSentimentValue, translateMetricName} from "@/lib/translateUtils";
 import {CustomTooltipProps, RelatedTopicTooltipProps} from "@/types/tooltips/topicsAnalysisTooltip";
+import {TrendsCustomTooltipProps} from "@/types/tooltips/trendsChartTooltip";
 
 export const RelatedTopicTooltip: React.FC<RelatedTopicTooltipProps> = ({ active, payload }) => {
     if (!active || !payload?.[0]) return null;
@@ -10,7 +11,12 @@ export const RelatedTopicTooltip: React.FC<RelatedTopicTooltipProps> = ({ active
     const data = payload[0].payload;
 
     return (
-        <div className="min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3 shadow-md backdrop-blur-sm">
+        <div className={cn(
+            "min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3",
+            "backdrop-blur-sm",
+            "dark:shadow-lg dark:shadow-black/20",
+            "shadow-lg shadow-black/5"
+        )}>
             <p className="mb-2 text-sm font-medium">
                 {data.topic}
             </p>
@@ -36,14 +42,14 @@ export const RelatedTopicTooltip: React.FC<RelatedTopicTooltipProps> = ({ active
                             data.strength >= 40 ? "bg-amber-500" :
                                 "bg-rose-500"
                     )}
-                    style={{ width: `${data.strength}%` }}
+                    style={{width: `${data.strength}%`}}
                 />
             </div>
         </div>
     );
 };
 
-export const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
+export const CustomTooltip: React.FC<CustomTooltipProps> = ({active, payload, label}) => {
     if (!active || !payload) return null;
 
     // Encuentra los valores de mentions y sentiment
@@ -51,7 +57,12 @@ export const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, l
     const sentiment = payload.find(p => p.dataKey === 'sentiment')?.value;
 
     return (
-        <div className="min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3 shadow-md backdrop-blur-sm">
+        <div className={cn(
+            "min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3",
+            "backdrop-blur-sm",
+            "dark:shadow-lg dark:shadow-black/20",
+            "shadow-lg shadow-black/5"
+        )}>
             <p className="mb-2 text-sm font-medium text-muted-foreground">
                 {formatShortDate(label || '')}
             </p>
@@ -75,6 +86,46 @@ export const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, l
                                 "text-rose-500 dark:text-rose-400"
                     )}>
                         {formatSentimentValue(sentiment || 0)}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export const TrendsChartTooltip: React.FC<TrendsCustomTooltipProps> = ({ active, payload, label }) => {
+    if (!active || !payload) return null;
+
+    return (
+        <div className={cn(
+            "min-w-[180px] rounded-lg border border-border/50 bg-popover/95 p-3",
+            "backdrop-blur-sm",
+            "dark:shadow-lg dark:shadow-black/20",
+            "shadow-lg shadow-black/5"
+        )}>
+            <p className="mb-2 text-sm font-medium text-muted-foreground">
+                {formatShortDate(label || '')}
+            </p>
+            <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-muted-foreground">
+                        {translateMetricName('mentions')}:
+                    </span>
+                    <span className="font-medium text-sm">
+                        {payload[0]?.value?.toLocaleString()}
+                    </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-muted-foreground">
+                        {translateMetricName('sentiment')}:
+                    </span>
+                    <span className={cn(
+                        "font-medium text-sm",
+                        Number(payload[1]?.value) >= 70 ? "text-emerald-500 dark:text-emerald-400" :
+                            Number(payload[1]?.value) >= 50 ? "text-amber-500 dark:text-amber-400" :
+                                "text-rose-500 dark:text-rose-400"
+                    )}>
+                        {formatSentimentValue(payload[1]?.value)}
                     </span>
                 </div>
             </div>
