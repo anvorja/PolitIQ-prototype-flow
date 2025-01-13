@@ -69,15 +69,15 @@ export function GeoHeatmap() {
                 <CardTitle>Distribución Geográfica de Menciones</CardTitle>
                 <div className="flex items-center gap-4">
                     <div className="legend-item">
-                        <div className="h-3 w-3 rounded-full bg-red-500 dark:bg-red-600" />
+                        <div className="h-3 w-3 rounded-full bg-emerald-500 dark:bg-emerald-600"/>
                         <span className="text-sm text-muted-foreground">Alta Actividad</span>
                     </div>
                     <div className="legend-item">
-                        <div className="h-3 w-3 rounded-full bg-amber-500 dark:bg-amber-600" />
+                        <div className="h-3 w-3 rounded-full bg-amber-500 dark:bg-amber-600"/>
                         <span className="text-sm text-muted-foreground">Media Actividad</span>
                     </div>
                     <div className="legend-item">
-                        <div className="h-3 w-3 rounded-full bg-emerald-500 dark:bg-emerald-600" />
+                        <div className="h-3 w-3 rounded-full bg-red-500 dark:bg-red-600"/>
                         <span className="text-sm text-muted-foreground">Baja Actividad</span>
                     </div>
                 </div>
