@@ -1,5 +1,4 @@
 // src/components/actions/GroupedActionsView.tsx
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +13,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ActionStatus, ActionPriority, ActionTask } from "@/types/alertEvents";
 import {Alert} from "@/types/alerts";
+import {cn} from "@/lib/utils";
 
 interface GroupedActionsViewProps {
     actions: ActionTask[];
@@ -111,44 +111,83 @@ export function GroupedActionsView({ actions, onActionClick, alerts = {} }: Grou
                                 {group.actions.map(action => (
                                     <div
                                         key={action.id}
-                                        className="p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors cursor-pointer"
+                                        className={cn(
+                                            "p-4 rounded-lg border",
+                                            "bg-card hover:bg-accent/5",
+                                            "transition-all duration-200 cursor-pointer",
+                                            "group" // Añadimos grupo para efectos hover
+                                        )}
                                         onClick={() => onActionClick(action)}
                                     >
                                         <div className="space-y-4">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h4 className="font-medium">{action.title}</h4>
-                                                    <p className="text-sm text-muted-foreground">
+                                            {/* Header con título y badges */}
+                                            <div className="flex justify-between items-start gap-4">
+                                                <div
+                                                    className="min-w-0 flex-1"> {/* Añadimos min-w-0 y flex-1 para manejar el overflow */}
+                                                    <h4 className="font-medium truncate">{action.title}</h4>
+                                                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                                                         {action.description}
                                                     </p>
                                                 </div>
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-2 flex-shrink-0"> {/* flex-shrink-0 para mantener los badges */}
                                                     <Badge
                                                         variant={action.priority === 'high' ? 'destructive' :
                                                             action.priority === 'medium' ? 'secondary' : 'outline'}
+                                                        className="transition-colors duration-200"
                                                     >
                                                         {translatePriority(action.priority)}
                                                     </Badge>
-                                                    <Badge className={getStatusColor(action.status)}>
-                                                        {translateStatus(action.status)}
+                                                    <Badge className={cn(
+                                                        getStatusColor(action.status),
+                                                        "transition-colors duration-200"
+                                                    )}>{translateStatus(action.status)}
                                                     </Badge>
                                                 </div>
                                             </div>
 
+                                            {/* Notas (si existen) */}
+                                            {action.notes && action.notes.length > 0 && (
+                                                <div className="text-sm text-muted-foreground bg-muted/50 rounded-md p-2">
+                                                    <div className={cn(
+                                                        "flex items-start gap-2",  // Cambiamos a flex para mejor alineación
+                                                        "line-clamp-2",
+                                                        "text-ellipsis overflow-hidden",
+                                                        "break-all", // Cambiamos a break-all para manejar mejor las cadenas largas sin espacios
+                                                        "max-w-full"
+                                                    )}>
+                                                        <span className="font-medium flex-shrink-0">Notas:</span>
+                                                        <span className="break-all">{action.notes[0]}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Info Grid */}
                                             <div className="grid grid-cols-3 gap-4 text-sm text-muted-foreground">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="w-4 h-4" />
-                                                    <span>Límite: {format(new Date(action.deadline), 'PPP', { locale: es })}</span>
+                                                <div className="flex items-center gap-2 overflow-hidden">
+                                                    <Calendar className="w-4 h-4 flex-shrink-0" />
+                                                    <span className="truncate">
+                                                        Límite: {format(new Date(action.deadline), 'PP', { locale: es })}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <Users2 className="w-4 h-4" />
-                                                    <span>Asignados: {action.assignedTo.length} personas</span>
+                                                    <Users2 className="w-4 h-4 flex-shrink-0" />
+                                                    <span className="truncate">
+                                                        {action.assignedTo.length} {action.assignedTo.length === 1 ? 'persona' : 'personas'}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <Clock className="w-4 h-4" />
-                                                    <span>Actualizado: {format(new Date(action.updatedAt), 'PPP', { locale: es })}</span>
+                                                    <Clock className="w-4 h-4 flex-shrink-0" />
+                                                    <span className="truncate">
+                                                        Creado: {format(new Date(action.createdAt), 'PP', { locale: es })}
+                                                    </span>
                                                 </div>
                                             </div>
+                                            {/* Hover Action Indicator */}
+                                            <div className={cn(
+                                                "h-1 w-0 bg-primary mt-2 rounded-full",
+                                                "transition-all duration-300",
+                                                "group-hover:w-full"
+                                            )} />
                                         </div>
                                     </div>
                                 ))}

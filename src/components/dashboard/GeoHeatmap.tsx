@@ -1,7 +1,7 @@
 // src/components/dashboard/GeoHeatmap.tsx
 "use client"
 
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTheme } from 'next-themes';
 import {
@@ -13,19 +13,26 @@ import {
 import { colombiaGeoData, departmentIntensityData } from '@/data/ColombiaGeoMockData';
 import type { DepartmentGeography, DepartmentName } from '@/types/geo';
 import { normalizeText } from "@/lib/textUtils";
+import {cn} from "@/lib/utils";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Colores actualizados para mejor contraste en ambos temas
 const ACTIVITY_COLORS = {
     light: {
-        high: "#ef4444",      // Rojo más vibrante
+        low: "#ef4444",      // Rojo más vibrante
         medium: "#f59e0b",    // Ámbar más cálido
-        low: "#10b981",       // Esmeralda más suave
+        high: "#10b981",       // Esmeralda más suave
         default: "#e2e8f0"    // Gris claro neutral
     },
     dark: {
-        high: "#dc2626",      // Rojo más oscuro
+        low: "#dc2626",      // Rojo más oscuro
         medium: "#d97706",    // Ámbar más oscuro
-        low: "#059669",       // Esmeralda más oscuro
+        high: "#059669",       // Esmeralda más oscuro
         default: "#1e293b"    // Slate oscuro
     }
 };
@@ -48,29 +55,19 @@ const getActivityLevel = (intensity: number | undefined) => {
 };
 
 export function GeoHeatmap() {
-    const [tooltipContent, setTooltipContent] = useState("");
-    const tooltipRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
     const mapRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
     const currentTheme = (theme === 'system' ? 'light' : theme) as 'light' | 'dark';
 
-    const getRelativeCoordinates = (evt: React.MouseEvent | MouseEvent) => {
-        if (mapRef.current) {
-            const rect = mapRef.current.getBoundingClientRect();
-            return {
-                x: evt.clientX - rect.left,
-                y: evt.clientY - rect.top
-            };
-        }
-        return { x: 0, y: 0 };
-    };
-
     return (
-        <Card className="col-span-full">
+        <Card className={cn(
+            "col-span-full",
+            "dark:bg-gradient-to-br dark:from-card/90 dark:to-card/100"
+        )}>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Distribución Geográfica de Menciones</CardTitle>
                 <div className="flex items-center gap-4">
-                    {/* Leyenda actualizada */}
                     <div className="legend-item">
                         <div className="h-3 w-3 rounded-full bg-red-500 dark:bg-red-600" />
                         <span className="text-sm text-muted-foreground">Alta Actividad</span>
@@ -95,55 +92,76 @@ export function GeoHeatmap() {
                             center: [-74.5, 4.5]
                         }}
                     >
-                        <Geographies geography={process.env.NEXT_PUBLIC_COLOMBIA_GEO_URL}>
-                            {({ geographies }) =>
-                                geographies.map((geo: DepartmentGeography) => {
-                                    const rawName = geo.properties.NOMBRE_DPT;
-                                    const normalizedName = normalizeText(rawName) as DepartmentName;
-                                    const intensity = departmentIntensityData[normalizedName];
-                                    const activityLevel = getActivityLevel(intensity);
+                        <TooltipProvider>
+                            <Geographies geography={process.env.NEXT_PUBLIC_COLOMBIA_GEO_URL}>
+                                {({ geographies }) =>
+                                    geographies.map((geo: DepartmentGeography) => {
+                                        const rawName = geo.properties.NOMBRE_DPT;
+                                        const normalizedName = normalizeText(rawName) as DepartmentName;
+                                        const intensity = departmentIntensityData[normalizedName];
+                                        const activityLevel = getActivityLevel(intensity);
 
-                                    return (
-                                        <Geography
-                                            key={geo.rsmKey}
-                                            geography={geo}
-                                            className="transition-colors duration-200"
-                                            style={{
-                                                default: {
-                                                    fill: getIntensityColor(intensity, currentTheme),
-                                                    stroke: "hsl(var(--border))",
-                                                    strokeWidth: 0.5,
-                                                    outline: "none",
-                                                },
-                                                hover: {
-                                                    fill: currentTheme === 'dark'
-                                                        ? "hsl(0,25%,73%)" // para dark mode
-                                                        : "hsl(220 13% 91%)", // para light mode
-                                                    stroke: currentTheme === 'dark'
-                                                        ? "hsl(0,25%,73%)" // Borde para dark mode
-                                                        : "hsl(0,0%,99%)", // Borde para light mode
-                                                    strokeWidth: 1,
-                                                    outline: "none",
-                                                    cursor: "pointer"
-                                                }
-                                            }}
-                                            onMouseEnter={(evt) => {
-                                                tooltipRef.current = getRelativeCoordinates(evt);
-                                                setTooltipContent(
-                                                    `${rawName}\n${activityLevel}${intensity ? ` (${intensity}%)\n` : '\n'}Área: ${Math.round(geo.properties.HECTARES).toLocaleString()} ha`
-                                                );
-                                            }}
-                                            onMouseMove={(evt) => {
-                                                tooltipRef.current = getRelativeCoordinates(evt);
-                                            }}
-                                            onMouseLeave={() => {
-                                                setTooltipContent("");
-                                            }}
-                                        />
-                                    );
-                                })
-                            }
-                        </Geographies>
+                                        return (
+                                            <Tooltip key={geo.rsmKey}>
+                                                <TooltipTrigger asChild>
+                                                    <Geography
+                                                        geography={geo}
+                                                        className="transition-colors duration-200"
+                                                        style={{
+                                                            default: {
+                                                                fill: getIntensityColor(intensity, currentTheme),
+                                                                stroke: "hsl(var(--border))",
+                                                                strokeWidth: 0.5,
+                                                                outline: "none",
+                                                            },
+                                                            hover: {
+                                                                fill: currentTheme === 'dark'
+                                                                    ? "hsl(0,25%,73%)"
+                                                                    : "hsl(220 13% 91%)",
+                                                                stroke: currentTheme === 'dark'
+                                                                    ? "hsl(0,25%,73%)"
+                                                                    : "hsl(0,0%,99%)",
+                                                                strokeWidth: 1,
+                                                                outline: "none",
+                                                                cursor: "pointer"
+                                                            }
+                                                        }}
+                                                    />
+                                                </TooltipTrigger>
+                                                <TooltipContent className="bg-black/90 border-0">
+                                                    <div className="space-y-1.5 p-1">
+                                                        <p className="text-base font-semibold text-white">
+                                                            {rawName}
+                                                        </p>
+                                                        <div className="space-y-1 text-sm">
+                                                            <div className="flex justify-between items-center gap-4">
+                                                                <span className="text-gray-400">Actividad</span>
+                                                                <span className="text-white font-medium">
+                                                                {activityLevel}
+                                                            </span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center gap-4">
+                                                                <span className="text-gray-400">Intensidad</span>
+                                                                <span className="text-white font-medium">
+                                                                {intensity ? `${intensity}%` : 'No disponible'}
+                                                            </span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center gap-4">
+                                                                <span className="text-gray-400">Área</span>
+                                                                <span className="text-white">
+                                                                {Math.round(geo.properties.HECTARES).toLocaleString()} ha
+                                                            </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        );
+                                    })
+                                }
+                            </Geographies>
+                        </TooltipProvider>
+
                         {/* Marcadores actualizados */}
                         {colombiaGeoData.map((city) => (
                             <Marker key={city.region} coordinates={city.coordinates}>
@@ -154,22 +172,6 @@ export function GeoHeatmap() {
                             </Marker>
                         ))}
                     </ComposableMap>
-
-
-                    {tooltipContent && (
-                        <div
-                            className="absolute z-10 px-3 py-2 text-sm bg-popover/95 border border-border
-                                     rounded-lg shadow-lg dark:shadow-primary/10 pointer-events-none"
-                            style={{
-                                left: `${tooltipRef.current.x}px`,
-                                top: `${tooltipRef.current.y}px`,
-                                transform: 'translate(10px, -50%)',
-                                whiteSpace: 'pre-line'
-                            }}
-                        >
-                            {tooltipContent}
-                        </div>
-                    )}
                 </div>
 
                 {/* Estadísticas actualizadas */}
@@ -178,8 +180,8 @@ export function GeoHeatmap() {
                         <div
                             key={region.region}
                             className="p-4 rounded-lg bg-muted/5 dark:bg-muted/10 hover:bg-muted/10 dark:hover:bg-muted/20
-                                     border border-border/40 dark:border-border/20
-                                     transition-colors"
+                                 border border-border/40 dark:border-border/20
+                                 transition-colors"
                         >
                             <div className="font-medium">{region.region}</div>
                             <div className="text-sm text-muted-foreground mt-1">

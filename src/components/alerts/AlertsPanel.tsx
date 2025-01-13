@@ -22,6 +22,7 @@ import { alertGroups } from '@/data/AlertsMockData';
 import { formatLongDate } from '@/lib/dateUtils';
 import type { Alert as AlertType } from '@/types/alerts';
 import { AlertDetailModal } from "@/components/alerts/AlertDetailModal";
+import {cn} from "@/lib/utils";
 
 const getAlertIcon = (type: AlertType['type']) => {
     switch (type) {
@@ -116,11 +117,17 @@ export function AlertsPanel() {
                                 return (
                                     <div
                                         key={alert.id}
-                                        className="p-4 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer"
+                                        className={cn(
+                                            "p-4 rounded-lg transition-all duration-200 cursor-pointer",
+                                            "border",
+                                            selectedAlert?.id === alert.id
+                                                ? "bg-accent dark:bg-primary/20 dark:border-primary/50" // Mantiene bg-accent en light, nueva propuesta en dark
+                                                : "bg-card hover:bg-accent dark:hover:bg-accent/20"
+                                        )}
                                         onClick={() => setSelectedAlert(alert)}
                                     >
                                         <div className="flex items-start gap-4">
-                                            <Icon className="w-5 h-5 mt-1 flex-shrink-0" />
+                                            <Icon className="w-5 h-5 mt-1 flex-shrink-0"/>
                                             <div className="flex-1 space-y-2">
                                                 {/* Header with Title and Priority */}
                                                 <div className="flex items-start justify-between gap-2">
@@ -139,13 +146,13 @@ export function AlertsPanel() {
                                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                                     {alert.reach && (
                                                         <div className="flex items-center gap-1 text-muted-foreground">
-                                                            <Users className="w-4 h-4" />
+                                                            <Users className="w-4 h-4"/>
                                                             <span>Alcance: {formatNumber(alert.reach)}</span>
                                                         </div>
                                                     )}
                                                     {alert.sentiment && (
                                                         <div className="flex items-center gap-1 text-muted-foreground">
-                                                            <AlertCircle className="w-4 h-4" />
+                                                            <AlertCircle className="w-4 h-4"/>
                                                             <span>Aprobación: {alert.sentiment}%</span>
                                                         </div>
                                                     )}
@@ -157,9 +164,9 @@ export function AlertsPanel() {
                                                         alert.changePercent > 0 ? 'text-green-500' : 'text-destructive'
                                                     }`}>
                                                         {alert.changePercent > 0 ? (
-                                                            <TrendingUp className="w-4 h-4 mr-1" />
+                                                            <TrendingUp className="w-4 h-4 mr-1"/>
                                                         ) : (
-                                                            <TrendingDown className="w-4 h-4 mr-1" />
+                                                            <TrendingDown className="w-4 h-4 mr-1"/>
                                                         )}
                                                         {Math.abs(alert.changePercent)}%
                                                     </div>
@@ -181,8 +188,9 @@ export function AlertsPanel() {
 
                                                 {/* Influencers */}
                                                 {alert.influencers && alert.influencers.length > 0 && (
-                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                        <Users2 className="w-4 h-4" />
+                                                    <div
+                                                        className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <Users2 className="w-4 h-4"/>
                                                         <div className="flex gap-2">
                                                             {alert.influencers.map((influencer) => (
                                                                 <span key={influencer}>{influencer}</span>
@@ -192,9 +200,10 @@ export function AlertsPanel() {
                                                 )}
 
                                                 {/* Location and Date */}
-                                                <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
+                                                <div
+                                                    className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
                                                     <div className="flex items-center gap-1">
-                                                        <MapPin className="w-3 h-3" />
+                                                        <MapPin className="w-3 h-3"/>
                                                         <span>{alert.region || alert.department || alert.city || 'Nacional'}</span>
                                                     </div>
                                                     <span>{formatLongDate(alert.timestamp.split('T')[0])}</span>
@@ -203,7 +212,8 @@ export function AlertsPanel() {
                                                 {/* Actions if exist */}
                                                 {alert.actions && alert.actions.length > 0 && (
                                                     <div className="mt-3 pt-3 border-t">
-                                                        <p className="text-xs font-medium mb-2">Acciones Recomendadas:</p>
+                                                        <p className="text-xs font-medium mb-2">Acciones
+                                                            Recomendadas:</p>
                                                         <ul className="text-xs text-muted-foreground space-y-1">
                                                             {alert.actions.map((action, index) => (
                                                                 <li key={index} className="flex items-start">
