@@ -1,6 +1,6 @@
 // src/components/geography/RegionalHeatmap.tsx
-
 import React, { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     ComposableMap,
@@ -21,10 +21,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { normalizeText } from '@/lib/textUtils';
-import { getDepartmentsInRegion,
-    getIntensityColor,
-    calculateRegionIntensity
-} from '@/lib/geoDepartmentsUtils';
 import { departmentIntensityData, regionalAnalytics } from '@/data/GeographyMockData';
 import {
     DEPARTMENT_TO_REGION,
@@ -32,28 +28,40 @@ import {
     RegionName
 } from '@/data/ColombiaRegionMapping';
 import { DepartmentGeography } from "@/types/geo";
+import { GeoJSONData, ActivityColors } from '@/types/regionalHeatmap';
 
-interface GeoJSONFeature {
-    type: string;
-    geometry: {
-        type: string;
-        coordinates: number[][][];
-    };
-    properties: {
-        NOMBRE_DPT: string;
-    };
-}
+// Colores actualizados para mejor contraste en ambos temas
+const ACTIVITY_COLORS: ActivityColors = {
+    light: {
+        low: "#ef4444",      // Rojo más vibrante
+        medium: "#f59e0b",    // Ámbar más cálido
+        high: "#10b981",       // Esmeralda más suave
+        default: "#e2e8f0"    // Gris claro neutral
+    },
+    dark: {
+        low: "#dc2626",      // Rojo más oscuro
+        medium: "#d97706",    // Ámbar más oscuro
+        high: "#059669",       // Esmeralda más oscuro
+        default: "#1e293b"    // Slate oscuro
+    }
+};
 
-interface GeoJSONData {
-    type: string;
-    features: GeoJSONFeature[];
-}
+// Función actualizada para determinar el color basado en la intensidad y el tema
+const getIntensityColor = (intensity: number | undefined, theme: 'light' | 'dark') => {
+    const colors = ACTIVITY_COLORS[theme];
+    if (intensity === undefined) return colors.default;
+    if (intensity >= 70) return colors.high;
+    if (intensity >= 40) return colors.medium;
+    return colors.low;
+};
 
 export function RegionalHeatmap() {
     const [selectedRegion, setSelectedRegion] = useState<RegionName | 'all'>('all');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [geoData, setGeoData] = useState<GeoJSONData | null>(null);
+    const { theme } = useTheme();
+    const currentTheme = (theme === 'system' ? 'light' : theme) as 'light' | 'dark';
 
     useEffect(() => {
         const loadGeoData = async () => {
@@ -83,21 +91,11 @@ export function RegionalHeatmap() {
         const departmentRegion = DEPARTMENT_TO_REGION[normalizedName];
 
         if (selectedRegion !== 'all' && departmentRegion !== selectedRegion) {
-            return "#e5e5e5";
+            return ACTIVITY_COLORS[currentTheme].default;
         }
 
         const intensity = departmentIntensityData[normalizedName] || 0;
-        return getIntensityColor(intensity);
-    };
-
-    const getRegionStats = (region: RegionName) => {
-        const avgIntensity = calculateRegionIntensity(region, departmentIntensityData);
-        const departments = getDepartmentsInRegion(region);
-        return {
-            avgIntensity,
-            departmentCount: departments.length,
-            departments: departments
-        };
+        return getIntensityColor(intensity, currentTheme);
     };
 
     return (
@@ -110,16 +108,16 @@ export function RegionalHeatmap() {
                         </CardTitle>
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-[#22c55e]" />
-                                <span className="text-sm">Alta</span>
+                                <div className="h-3 w-3 rounded-full bg-emerald-500 dark:bg-emerald-600" />
+                                <span className="text-sm text-muted-foreground">Alta</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-[#eab308]" />
-                                <span className="text-sm">Media</span>
+                                <div className="h-3 w-3 rounded-full bg-amber-500 dark:bg-amber-600" />
+                                <span className="text-sm text-muted-foreground">Media</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-[#ef4444]" />
-                                <span className="text-sm">Baja</span>
+                                <div className="h-3 w-3 rounded-full bg-red-500 dark:bg-red-600" />
+                                <span className="text-sm text-muted-foreground">Baja</span>
                             </div>
                         </div>
                     </div>
@@ -137,14 +135,9 @@ export function RegionalHeatmap() {
                         </SelectContent>
                     </Select>
                 </div>
-                {selectedRegion !== 'all' && (
-                    <div className="text-sm text-muted-foreground mt-2">
-                        Intensidad promedio: {getRegionStats(selectedRegion).avgIntensity}%
-                    </div>
-                )}
             </CardHeader>
             <CardContent>
-                <div className="h-[600px] bg-muted/5 rounded-lg overflow-hidden relative">
+                <div className="h-[600px] bg-white dark:bg-black/40 rounded-lg overflow-hidden relative">
                     {isLoading && (
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="flex flex-col items-center">
@@ -169,7 +162,6 @@ export function RegionalHeatmap() {
                             <TooltipProvider>
                                 <Geographies geography={geoData}>
                                     {({geographies}) => {
-                                        console.log("Geographies loaded:", geographies?.length);
                                         if (!geographies) return null;
                                         return geographies.map((geo: DepartmentGeography) => (
                                             <Tooltip key={geo.rsmKey}>
@@ -177,43 +169,47 @@ export function RegionalHeatmap() {
                                                     <Geography
                                                         key={geo.rsmKey}
                                                         geography={geo}
-                                                        fill={getDepartmentColor(geo.properties.NOMBRE_DPT)}
-                                                        stroke="#FFF"
-                                                        strokeWidth={0.5}
                                                         style={{
                                                             default: {
+                                                                fill: getDepartmentColor(geo.properties.NOMBRE_DPT),
+                                                                stroke: "hsl(var(--border))",
+                                                                strokeWidth: 0.5,
                                                                 outline: "none",
-                                                                transition: "all 250ms"
                                                             },
                                                             hover: {
-                                                                fill: "hsl(var(--primary))",
+                                                                fill: currentTheme === 'dark'
+                                                                    ? "hsl(0,25%,73%)"
+                                                                    : "hsl(220 13% 91%)",
+                                                                stroke: currentTheme === 'dark'
+                                                                    ? "hsl(0,25%,73%)"
+                                                                    : "hsl(0,0%,99%)",
+                                                                strokeWidth: 1,
                                                                 outline: "none",
-                                                                cursor: "pointer",
-                                                                stroke: "#fff",
-                                                                strokeWidth: 1.5
-                                                            },
-                                                            pressed: {
-                                                                outline: "none"
+                                                                cursor: "pointer"
                                                             }
                                                         }}
                                                     />
                                                 </TooltipTrigger>
                                                 <TooltipContent className="bg-black/90 border-0">
                                                     <div className="space-y-1.5 p-1">
-                                                        <p className="text-base font-semibold text-white">{geo.properties.NOMBRE_DPT}</p>
+                                                        <p className="text-base font-semibold text-white">
+                                                            {geo.properties.NOMBRE_DPT}
+                                                        </p>
                                                         <div className="space-y-1 text-sm">
                                                             <div className="flex justify-between items-center gap-4">
                                                                 <span className="text-gray-400">Región</span>
                                                                 <span className="text-white">
                                                                     {DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]
-                                                                        ? COLOMBIA_REGIONS[DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]]: 'No definida'}
+                                                                        ? COLOMBIA_REGIONS[DEPARTMENT_TO_REGION[normalizeText(geo.properties.NOMBRE_DPT)]]
+                                                                        : 'No definida'}
                                                                 </span>
                                                             </div>
                                                             <div className="flex justify-between items-center gap-4">
                                                                 <span className="text-gray-400">Influencia</span>
                                                                 <span className="text-white font-medium">
                                                                     {departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]
-                                                                        ? `${departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]}%`: 'No disponible'}
+                                                                        ? `${departmentIntensityData[normalizeText(geo.properties.NOMBRE_DPT)]}%`
+                                                                        : 'No disponible'}
                                                                 </span>
                                                             </div>
                                                         </div>

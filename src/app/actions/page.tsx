@@ -1,5 +1,4 @@
 // src/app/actions/page.tsx
-
 "use client"
 
 import { format } from 'date-fns';
@@ -29,12 +28,13 @@ import {
     LayoutGrid,
     LayoutList, Database, Cloud,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { Badge } from "@/components/ui/badge";
 import { ActionStatus, ActionPriority, ActionTask } from "@/types/alertEvents";
 import { Button } from "@/components/ui/button";
 import { ActionDetailModal } from "@/components/actions/ActionDetailModal";
 import { GroupedActionsView } from "@/components/actions/GroupedActionsView";
+import {cn} from "@/lib/utils";
 
 type SortField = 'deadline' | 'priority' | 'status' | 'createdAt';
 type SortOrder = 'asc' | 'desc';
@@ -82,6 +82,12 @@ export default function ActionsPage() {
         initializeStore
     } = useActionStore();
 
+    const [stats, setStats] = useState({
+        total: 0,
+        pending: 0,
+        completed: 0
+    });
+
     // Estado local
     const [statusFilter, setStatusFilter] = useState<ActionStatus | 'all'>('all');
     const [priorityFilter, setPriorityFilter] = useState<ActionPriority | 'all'>('all');
@@ -93,10 +99,19 @@ export default function ActionsPage() {
     const actions = getCurrentActions();
     const alerts = getCurrentAlerts();
 
-    // Inicializar store
-    React.useEffect(() => {
+    // Modificar el useEffect para que observe también useMockData
+    useEffect(() => {
         initializeStore();
-    }, [initializeStore]);
+        const currentActions = getCurrentActions();
+
+        // Actualizamos las estadísticas solo después de que los datos estén listos
+        setStats({
+            total: currentActions.length,
+            pending: currentActions.filter(a => a.status === 'pending').length,
+            completed: currentActions.filter(a => a.status === 'completed').length
+        });
+    }, [getCurrentActions, initializeStore, useMockData]);
+
 
     const sortActions = (a: ActionTask, b: ActionTask) => {
         const order = sortConfig.order === 'asc' ? 1 : -1;
@@ -172,31 +187,27 @@ export default function ActionsPage() {
                     >
                         {useMockData ? (
                             <>
-                                <Database className="w-4 h-4" />
+                                <Database className="w-4 h-4"/>
                                 Usando datos de prueba
                             </>
                         ) : (
                             <>
-                                <Cloud className="w-4 h-4" />
+                                <Cloud className="w-4 h-4"/>
                                 Usando datos reales
                             </>
                         )}
                     </Button>
                     <div className="text-sm">
                         <span className="text-muted-foreground">Total:</span>
-                        <span className="ml-1 font-medium">{actions.length}</span>
+                        <span className="ml-1 font-medium">{stats.total}</span>
                     </div>
                     <div className="text-sm">
                         <span className="text-muted-foreground">Pendientes:</span>
-                        <span className="ml-1 font-medium">
-                        {actions.filter(a => a.status === 'pending').length}
-                    </span>
+                        <span className="ml-1 font-medium">{stats.pending}</span>
                     </div>
                     <div className="text-sm">
                         <span className="text-muted-foreground">Completadas:</span>
-                        <span className="ml-1 font-medium">
-                        {actions.filter(a => a.status === 'completed').length}
-                    </span>
+                        <span className="ml-1 font-medium">{stats.completed}</span>
                     </div>
                 </div>
             </div>
@@ -205,7 +216,7 @@ export default function ActionsPage() {
                 <CardContent className="pt-6">
                     <div className="flex gap-4 items-center justify-between">
                         <div className="flex gap-4 items-center">
-                            <Filter className="w-4 h-4 text-muted-foreground" />
+                            <Filter className="w-4 h-4 text-muted-foreground"/>
                             <Select
                                 value={statusFilter}
                                 onValueChange={(value: ActionStatus | 'all') => setStatusFilter(value)}
@@ -327,8 +338,16 @@ export default function ActionsPage() {
                                                 <span>Creado: {format(new Date(action.createdAt), 'PPP', { locale: es })}</span>
                                             </div>
                                             {action.notes && action.notes.length > 0 && (
-                                                <div className="md:col-span-2 text-muted-foreground">
-                                                    Notas: {action.notes[0]}
+                                                <div className="text-sm text-muted-foreground">
+                                                    <span className="font-medium">Notas: </span>
+                                                    <div className={cn(
+                                                        "line-clamp-2",
+                                                        "text-ellipsis overflow-hidden",
+                                                        "break-words",
+                                                        "max-w-full"
+                                                    )}>
+                                                        {action.notes[0]}
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>

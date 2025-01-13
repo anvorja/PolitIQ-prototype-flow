@@ -24,15 +24,15 @@ import {
 // Colores actualizados para mejor contraste en ambos temas
 const ACTIVITY_COLORS = {
     light: {
-        high: "#ef4444",      // Rojo más vibrante
+        low: "#ef4444",      // Rojo más vibrante
         medium: "#f59e0b",    // Ámbar más cálido
-        low: "#10b981",       // Esmeralda más suave
+        high: "#10b981",       // Esmeralda más suave
         default: "#e2e8f0"    // Gris claro neutral
     },
     dark: {
-        high: "#dc2626",      // Rojo más oscuro
+        low: "#dc2626",      // Rojo más oscuro
         medium: "#d97706",    // Ámbar más oscuro
-        low: "#059669",       // Esmeralda más oscuro
+        high: "#059669",       // Esmeralda más oscuro
         default: "#1e293b"    // Slate oscuro
     }
 };
