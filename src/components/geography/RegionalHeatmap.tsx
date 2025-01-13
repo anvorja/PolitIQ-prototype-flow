@@ -64,26 +64,44 @@ export function RegionalHeatmap() {
     const currentTheme = (theme === 'system' ? 'light' : theme) as 'light' | 'dark';
 
     useEffect(() => {
+        let isSubscribed = true;
+
         const loadGeoData = async () => {
+            if (!process.env.NEXT_PUBLIC_COLOMBIA_GEO_URL) {
+                setError('URL no configurada');
+                setIsLoading(false);
+                return;
+            }
+
             try {
-                const response = await fetch(process.env.NEXT_PUBLIC_COLOMBIA_GEO_URL || '');
+                const response = await fetch(process.env.NEXT_PUBLIC_COLOMBIA_GEO_URL);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    setError(`Error en la petición: ${response.status}`);
+                    return;
                 }
+
                 const data = await response.json();
-                setGeoData(data);
-                setIsLoading(false);
-            } catch (err: unknown) {
-                if (err instanceof Error) {
-                    setError(err.message);
-                } else {
-                    setError('Error desconocido al cargar el mapa');
+                if (isSubscribed) {
+                    setGeoData(data);
                 }
-                setIsLoading(false);
+            } catch (err: unknown) {
+                if (isSubscribed) {
+                    setError(err instanceof Error ? err.message : 'Error desconocido al cargar el mapa');
+                }
+            } finally {
+                if (isSubscribed) {
+                    setIsLoading(false);
+                }
             }
         };
 
-        loadGeoData().catch(console.error);
+        // Retornamos la promesa explícitamente
+        void loadGeoData();
+        // O alternativamente: loadGeoData().catch(() => {});
+
+        return () => {
+            isSubscribed = false;
+        };
     }, []);
 
     const getDepartmentColor = (departmentName: string) => {
