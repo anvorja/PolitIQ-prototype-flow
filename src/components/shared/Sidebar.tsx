@@ -101,7 +101,13 @@ export function Sidebar() {
                     "flex items-center gap-3 px-2",
                     isCollapsed && "justify-center"
                 )}>
-                    <div className="w-8 h-8 rounded-full bg-accent flex-shrink-0" />
+                    <Image
+                        src="https://res.cloudinary.com/dv2xu8dwr/image/upload/v1736765937/admin-avatar_vhly3y.jpg"
+                        alt="Admin Avatar"
+                        width={32}
+                        height={32}
+                        className="rounded-full object-cover"
+                    />
                     {!isCollapsed && (
                         <div className="flex flex-col">
                             <span className="text-sm font-medium">Administrador</span>
