@@ -100,30 +100,30 @@ export function RegionalHeatmap() {
 
     return (
         <Card>
-            <CardHeader>
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center justify-between">
+            <CardHeader className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-8">
                         <CardTitle>
                             Mapa de {selectedRegion === 'all' ? 'Influencia Regional' : COLOMBIA_REGIONS[selectedRegion]}
                         </CardTitle>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-emerald-500 dark:bg-emerald-600" />
+                                <div className="h-3 w-3 rounded-full bg-emerald-500 dark:bg-emerald-600"/>
                                 <span className="text-sm text-muted-foreground">Alta</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-amber-500 dark:bg-amber-600" />
+                                <div className="h-3 w-3 rounded-full bg-amber-500 dark:bg-amber-600"/>
                                 <span className="text-sm text-muted-foreground">Media</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-red-500 dark:bg-red-600" />
+                                <div className="h-3 w-3 rounded-full bg-red-500 dark:bg-red-600"/>
                                 <span className="text-sm text-muted-foreground">Baja</span>
                             </div>
                         </div>
                     </div>
                     <Select value={selectedRegion} onValueChange={(value: RegionName | 'all') => setSelectedRegion(value)}>
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Filtrar por región" />
+                            <SelectValue placeholder="Filtrar por región"/>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Todas las regiones</SelectItem>
@@ -136,6 +136,7 @@ export function RegionalHeatmap() {
                     </Select>
                 </div>
             </CardHeader>
+
             <CardContent>
                 <div className="h-[600px] bg-white dark:bg-black/40 rounded-lg overflow-hidden relative">
                     {isLoading && (
